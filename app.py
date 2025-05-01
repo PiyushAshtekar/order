@@ -35,9 +35,12 @@ user_carts = {}
 
 # Menu
 MENU_ITEMS = {
-    "burger": {"name": "🍔 Burger", "price": 11},
-    "hotdog": {"name": "🌭 Hot Dog", "price": 9},
-    "juice": {"name": "🥤 Juice", "price": 2},
+    "burger": {"name": "🍔 Burger", "price": 4.99},
+    "fries": {"name": "🍟 Fries", "price": 1.49},
+    "hotdog": {"name": "🌭 Hotdog", "price": 3.49},
+    "taco": {"name": "🌮 Taco", "price": 3.99},
+    "pizza": {"name": "🍕 Pizza", "price": 7.99},
+    "donut": {"name": "🍩 Donut", "price": 1.49},
 }
 
 # Telegram bot application
@@ -63,7 +66,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_carts[chat_id] = []
 
     keyboard = [
-        [InlineKeyboardButton("🛒 Open Mini App Menu", web_app=WebAppInfo(url="https://order-smoky.vercel.app/menu"))],
+        [InlineKeyboardButton("🛒 Open Mini App Menu", web_app=WebAppInfo(url="https://order-rhgz.onrender.com/menu"))],
         *[
             [InlineKeyboardButton(f"{item['name']} - ${item['price']}", callback_data=key)]
             for key, item in MENU_ITEMS.items()
@@ -107,11 +110,22 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(chat_id=chat_id, text=f"{MENU_ITEMS[query.data]['name']} added to cart!")
 
 async def web_app_data_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.effective_chat.id
-    data = json.loads(update.message.web_app_data.data)
-    item = data['item']
-    user_carts.setdefault(chat_id, []).append(item)
-    await update.message.reply_text(f"✅ {MENU_ITEMS[item]['name']} added to cart via Mini App!")
+    print("📥 Received web_app_data:", update.message.web_app_data.data)
+
+    try:
+        data = json.loads(update.message.web_app_data.data)
+        item = data['item']
+
+        if item not in MENU_ITEMS:
+            await update.message.reply_text("❌ Invalid item.")
+            return
+
+        chat_id = update.effective_chat.id
+        user_carts.setdefault(chat_id, []).append(item)
+        await update.message.reply_text(f"✅ {MENU_ITEMS[item]['name']} added to cart via Mini App!")
+    except Exception as e:
+        print("❌ Error in web_app_data_handler:", e)
+        await update.message.reply_text("⚠️ Something went wrong adding your item.")
 
 def generate_invoice_pdf(chat_id, cart):
     filename = f"invoice_{chat_id}_{uuid4().hex}.pdf"
@@ -134,9 +148,8 @@ def generate_invoice_pdf(chat_id, cart):
 
 def set_webhook():
     import asyncio
-    loop = asyncio.get_event_loop()
-    webhook_url = f"https://order-smoky.vercel.app/webhook"
-    loop.run_until_complete(app.bot.set_webhook(url=webhook_url))
+    webhook_url = f"https://api.telegram.org/bot{BOT_TOKEN}/setWebhook?url=https://order-rhgz.onrender.com/webhook"
+    asyncio.run(app.bot.set_webhook(url=webhook_url))
     logging.info(f"Webhook set to {webhook_url}")
 
 def main():
@@ -150,13 +163,8 @@ def main():
         level=logging.INFO
     )
 
-    # Add handlers
-    app.add_handler(CommandHandler('start', start))
+if __name__ == '__main__':
+    app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, web_app_data_handler))
-
-    # Set webhook
-    set_webhook()
-
-if __name__ == '__main__':
-    main()
+    app.run_polling()

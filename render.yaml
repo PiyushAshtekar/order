@@ -7,4 +7,5 @@ services:
     startCommand: gunicorn app:flask_app
     envVars:
       - key: TELEGRAM_BOT_TOKEN
-        value: 8113582302:AAH6lIl3VlbeAsLUURyP9cBTW_yTqTXDNzk  # You can also set this directly via the Render dashboard
+        value: 7651553668:AAFbL3yM27J67e3XKiU6O35pRQ_v0n5ZkX8
+  # You can also set this directly via the Render dashboard
