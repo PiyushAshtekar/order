@@ -29,6 +29,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
+            animation: slideUp 0.3s ease;
         }
 
         .back-button {
@@ -37,6 +38,11 @@
             border: none;
             padding: 0 12px;
             cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .back-button:hover {
+            transform: translateX(-4px);
         }
 
         .header-title {
@@ -59,11 +65,14 @@
             padding: 12px;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            animation: fadeIn 0.5s ease;
         }
 
         .item-image {
             font-size: 48px;
             margin-bottom: 8px;
+            transition: transform 0.3s ease;
         }
 
         .item-name {
@@ -97,12 +106,28 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .quantity-btn:hover {
+            background: #d0d0d0;
+            transform: scale(1.1);
+        }
+
+        .quantity-btn:active {
+            transform: scale(0.9);
+            animation: shake 0.2s ease;
         }
 
         .quantity {
             font-size: 14px;
             min-width: 24px;
             text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .quantity:not(:empty) {
+            animation: pulse 0.3s ease;
         }
 
         .view-order-button {
@@ -118,10 +143,25 @@
             font-size: 16px;
             cursor: pointer;
             display: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(100%);
+            opacity: 0;
         }
 
         .view-order-button.active {
             display: block;
+            transform: translateY(0);
+            opacity: 1;
+            animation: slideUp 0.3s ease;
+        }
+
+        .view-order-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .view-order-button:active {
+            animation: scaleButton 0.2s ease;
         }
 
         .order-summary {
@@ -136,6 +176,12 @@
             justify-content: space-between;
             margin-bottom: 12px;
             align-items: center;
+            animation: fadeIn 0.3s ease;
+            transition: all 0.2s ease;
+        }
+
+        .order-item:hover {
+            transform: translateX(4px);
         }
 
         .order-item-left {
@@ -184,6 +230,154 @@
             font-size: 16px;
             cursor: pointer;
             margin-top: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .pay-button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .pay-button:active {
+            transform: scale(0.98);
+            animation: scaleButton 0.2s ease;
+        }
+
+        /* Add animation keyframes */
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes scaleButton {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            75% { transform: translateX(2px); }
+        }
+
+        /* Add transitions and animations to existing elements */
+        .page {
+            transition: opacity 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .page.active {
+            opacity: 1;
+            transform: translateY(0);
+            animation: slideUp 0.3s ease forwards;
+        }
+
+        .menu-item {
+            transition: all 0.3s ease;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .item-image {
+            transition: transform 0.3s ease;
+        }
+
+        .menu-item:hover .item-image {
+            animation: bounce 0.8s ease infinite;
+        }
+
+        .quantity-btn {
+            transition: all 0.2s ease;
+        }
+
+        .quantity-btn:hover {
+            background: #d0d0d0;
+            transform: scale(1.1);
+        }
+
+        .quantity-btn:active {
+            transform: scale(0.9);
+            animation: shake 0.2s ease;
+        }
+
+        .quantity {
+            transition: all 0.2s ease;
+        }
+
+        .quantity:not(:empty) {
+            animation: pulse 0.3s ease;
+        }
+
+        .view-order-button {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(100%);
+            opacity: 0;
+        }
+
+        .view-order-button.active {
+            transform: translateY(0);
+            opacity: 1;
+            animation: slideUp 0.3s ease;
+        }
+
+        .view-order-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .view-order-button:active {
+            animation: scaleButton 0.2s ease;
+        }
+
+        .order-item {
+            animation: fadeIn 0.3s ease;
+            transition: all 0.2s ease;
+        }
+
+        .order-item:hover {
+            transform: translateX(4px);
+        }
+
+        .pay-button {
+            transition: all 0.3s ease;
+        }
+
+        .pay-button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .pay-button:active {
+            transform: scale(0.98);
+            animation: scaleButton 0.2s ease;
+        }
+
+        .header {
+            animation: slideUp 0.3s ease;
         }
     </style>
 </head>
@@ -371,7 +565,7 @@
                 }));
             }
         }
-
+        
         Telegram.WebApp.ready();
         Telegram.WebApp.expand();
     </script>
