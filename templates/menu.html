@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Mini App Menu</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <style>
         /* Base styles and resets */
         body {
@@ -20,7 +20,7 @@
             padding: 0;
             display: none;
             min-height: 100vh;
-            padding-bottom: calc(80px + env(safe-area-inset-bottom));
+            background: #f5f5f5;
         }
 
         .page.active {
@@ -29,15 +29,20 @@
 
         /* Header styles */
         .header {
+            background: #1e2327;
+            color: white;
+            padding: 16px;
             display: flex;
             align-items: center;
-            padding: 16px;
-            background: white;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            justify-content: space-between;
             position: sticky;
             top: 0;
             z-index: 100;
-            gap: 16px;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 500;
         }
 
         .back-button {
@@ -46,13 +51,6 @@
             border: none;
             padding: 8px;
             cursor: pointer;
-            color: #333;
-        }
-
-        .header-title {
-            flex: 1;
-            font-size: 18px;
-            font-weight: 600;
             color: #333;
         }
 
@@ -177,12 +175,27 @@
             cursor: pointer;
             margin: 0;
             z-index: 100;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Add padding to the bottom of the page to prevent content from being hidden behind the pay button */
+        #order-page {
+            padding-bottom: 80px;
+        }
+
+        /* Ensure the viewport meta is accessible */
+        @media screen and (max-width: 100%) {
+            .pay-button {
+                padding-bottom: env(safe-area-inset-bottom, 20px);
+            }
         }
 
         /* Responsive adjustments */
         @media (min-width: 768px) {
-            .page {
-                max-width: 600px;
+            .menu-grid {
+                grid-template-columns: repeat(3, 1fr);
+                max-width: 1200px;
                 margin: 0 auto;
             }
             
@@ -195,6 +208,26 @@
                 max-width: 600px;
                 left: 50%;
                 transform: translateX(-50%);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .menu-grid {
+                grid-template-columns: 1fr;
+                padding: 12px;
+            }
+            
+            .menu-item {
+                padding: 16px;
+            }
+            
+            .quantity-controls {
+                padding: 6px 12px;
+            }
+            
+            .quantity-btn {
+                width: 28px;
+                height: 28px;
             }
         }
 
@@ -231,80 +264,69 @@
 
         .menu-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 16px;
-            margin-bottom: 80px;
+            padding: 16px;
+            padding-bottom: 80px;
         }
 
         .menu-item {
             background: white;
-            border-radius: 12px;
-            padding: 12px;
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            animation: fadeIn 0.5s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
         .item-image {
             font-size: 48px;
-            margin-bottom: 8px;
-            transition: transform 0.3s ease;
+            margin-bottom: 12px;
         }
 
         .item-name {
-            font-size: 14px;
-            margin-bottom: 4px;
+            font-size: 16px;
+            font-weight: 500;
             color: #333;
+            margin-bottom: 4px;
         }
 
         .item-price {
-            font-size: 14px;
+            font-size: 16px;
             color: #666;
-            margin-bottom: 8px;
+            margin-bottom: 16px;
         }
 
         .quantity-controls {
             display: flex;
-            justify-content: center;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
+            gap: 16px;
+            background: #f8f8f8;
+            padding: 8px 16px;
+            border-radius: 24px;
         }
 
         .quantity-btn {
-            background: #e0e0e0;
-            border: none;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            font-size: 16px;
+            border: none;
+            background: #e0e0e0;
+            color: #333;
+            font-size: 20px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
-        }
-
-        .quantity-btn:hover {
-            background: #d0d0d0;
-            transform: scale(1.1);
-        }
-
-        .quantity-btn:active {
-            transform: scale(0.9);
-            animation: shake 0.2s ease;
         }
 
         .quantity {
-            font-size: 14px;
+            font-size: 16px;
             min-width: 24px;
             text-align: center;
-            transition: all 0.2s ease;
-        }
-
-        .quantity:not(:empty) {
-            animation: pulse 0.3s ease;
+            font-weight: 500;
         }
 
         .view-order-button {
@@ -318,27 +340,32 @@
             border-radius: 8px;
             padding: 16px;
             font-size: 16px;
+            font-weight: 500;
             cursor: pointer;
             display: none;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            transform: translateY(100%);
-            opacity: 0;
+            z-index: 100;
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         .view-order-button.active {
             display: block;
-            transform: translateY(0);
-            opacity: 1;
-            animation: slideUp 0.3s ease;
         }
 
-        .view-order-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        @media (min-width: 640px) {
+            .view-order-button {
+                left: 50%;
+                transform: translateX(-50%);
+                width: calc(100% - 32px);
+            }
         }
 
-        .view-order-button:active {
-            animation: scaleButton 0.2s ease;
+        @supports (padding: max(0px)) {
+            .view-order-button {
+                padding-bottom: max(16px, env(safe-area-inset-bottom));
+                margin-bottom: env(safe-area-inset-bottom);
+            }
         }
 
         .order-item {
@@ -360,7 +387,7 @@
             transform: scale(0.98);
             animation: scaleButton 0.2s ease;
         }
-`
+
         .header {
             animation: slideUp 0.3s ease;
         }
