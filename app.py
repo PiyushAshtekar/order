@@ -67,17 +67,17 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Send burger image
     try:
-        with open('static/burger.svg', 'rb') as photo:
+        with open('static/burger.png', 'rb') as photo:
             await context.bot.send_photo(
                 chat_id=chat_id,
                 photo=photo,
-                caption="🍔 Welcome to Burger Bot! 🍔\n\nUse this bot to order fictional fast food – the only fast food that is good for your health!\n\nLet's get started! 🎉"
+                caption="🍔 Welcome to Raju Burger! 🍔\n\nUse this bot to order fictional fast food – the only fast food that is good for your health!\n\nLet's get started! 🎉"
             )
     except Exception as e:
         logging.error(f"Failed to send welcome image: {e}")
         await context.bot.send_message(
             chat_id=chat_id,
-            text="🍔 Welcome to Burger Bot! 🍔\n\nUse this bot to order fictional fast food – the only fast food that is good for your health!\n\nLet's get started! 🎉"
+            text="🍔 Welcome to Raju Burger! 🍔\n\nUse this bot to order fictional fast food – the only fast food that is good for your health!\n\nLet's get started! 🎉"
         )
 
     keyboard = [
@@ -125,6 +125,7 @@ async def web_app_data_handler(update: Update, context: ContextTypes.DEFAULT_TYP
     try:
         data = json.loads(update.message.web_app_data.data)
         items = data.get('items', [])
+        comment = data.get('comment', '')
 
         if not items:
             await update.message.reply_text("❌ Cart is empty.")
@@ -134,6 +135,7 @@ async def web_app_data_handler(update: Update, context: ContextTypes.DEFAULT_TYP
         user_carts[chat_id] = []
         
         item_counts = {}
+        total = 0
         for item in items:
             if item not in MENU_ITEMS:
                 await update.message.reply_text(f"❌ Invalid item: {item}")
@@ -141,13 +143,22 @@ async def web_app_data_handler(update: Update, context: ContextTypes.DEFAULT_TYP
                 
             user_carts[chat_id].append(item)
             item_counts[item] = item_counts.get(item, 0) + 1
+            total += MENU_ITEMS[item]['price']
 
-        # Create a summary message
-        summary = "🛒 Added to cart:\n"
+        # Create a detailed order confirmation
+        order_id = str(uuid4())[:8].upper()
+        confirmation = f"🎉 Order #{order_id} Confirmed!\n\n"
+        confirmation += "📋 Order Summary:\n"
         for item, count in item_counts.items():
-            summary += f"- {count}x {MENU_ITEMS[item]['name']}\n"
+            item_total = MENU_ITEMS[item]['price'] * count
+            confirmation += f"• {count}× {MENU_ITEMS[item]['name']} = ${item_total:.2f}\n"
         
-        await update.message.reply_text(summary)
+        confirmation += f"\n💰 Total: ${total:.2f}"
+        
+        if comment.strip():
+            confirmation += f"\n\n💭 Your Comment:\n{comment}"
+        
+        await update.message.reply_text(confirmation)
     except Exception as e:
         print("❌ Error in web_app_data_handler:", e)
         await update.message.reply_text("⚠️ Something went wrong adding your items.")
