@@ -65,11 +65,19 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     user_carts[chat_id] = []
 
+    # Send burger image
+    with open('static/burger.svg', 'rb') as photo:
+        await context.bot.send_photo(
+            chat_id=chat_id,
+            photo=photo,
+            caption="🍔 Welcome to Burger Bot! 🍔\n\nUse this bot to order fictional fast food – the only fast food that is good for your health!\n\nLet's get started! 🎉"
+        )
+
     keyboard = [
         [InlineKeyboardButton("🛒 Order Food", web_app=WebAppInfo(url="https://order-rhgz.onrender.com/menu"))]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text("Welcome! Click the button below to order food:", reply_markup=reply_markup)
+    await update.message.reply_text("Please tap the button below to order your perfect lunch! 🍽️", reply_markup=reply_markup)
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
