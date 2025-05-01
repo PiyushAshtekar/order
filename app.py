@@ -4,7 +4,6 @@ import json
 from uuid import uuid4
 from flask import Flask, render_template, request
 from dotenv import load_dotenv
-from threading import Thread
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 
@@ -31,14 +30,6 @@ PORT = int(os.getenv("PORT", 5000))
 # Flask app
 flask_app = Flask(__name__)
 
-@flask_app.route('/')
-def index():
-    return 'Bot is running!'
-
-@flask_app.route('/menu')
-def menu():
-    return render_template('menu.html')  # Make sure this file exists
-
 # Global cart (in-memory)
 user_carts = {}
 
@@ -49,13 +40,30 @@ MENU_ITEMS = {
     "juice": {"name": "🥤 Juice", "price": 2},
 }
 
+# Telegram bot application
+app = ApplicationBuilder().token(BOT_TOKEN).build()
+
+@flask_app.route('/')
+def index():
+    return 'Bot is running!'
+
+@flask_app.route('/menu')
+def menu():
+    return render_template('menu.html')
+
+@flask_app.route('/webhook', methods=['POST'])
+async def webhook():
+    update = Update.de_json(request.get_json(), app.bot)
+    await app.process_update(update)
+    return 'OK'
+
 # Handlers
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     user_carts[chat_id] = []
 
     keyboard = [
-        [InlineKeyboardButton("🛒 Open Mini App Menu", web_app=WebAppInfo(url="https://yourdomain.com/menu"))],
+        [InlineKeyboardButton("🛒 Open Mini App Menu", web_app=WebAppInfo(url="https://order-smoky.vercel.app/menu"))],
         *[
             [InlineKeyboardButton(f"{item['name']} - ${item['price']}", callback_data=key)]
             for key, item in MENU_ITEMS.items()
@@ -107,7 +115,7 @@ async def web_app_data_handler(update: Update, context: ContextTypes.DEFAULT_TYP
 
 def generate_invoice_pdf(chat_id, cart):
     filename = f"invoice_{chat_id}_{uuid4().hex}.pdf"
-    file_path = os.path.join(os.getcwd(), filename)
+    file_path = os.path.join('/tmp', filename)  # Use /tmp for Vercel
 
     c = canvas.Canvas(file_path, pagesize=letter)
     c.setFont("Helvetica", 12)
@@ -124,13 +132,12 @@ def generate_invoice_pdf(chat_id, cart):
     c.save()
     return file_path
 
-def run_flask():
-    # Development server configuration
-    flask_app.run(
-        host='0.0.0.0',
-        port=PORT,
-        ssl_context='adhoc'  # Enable HTTPS
-    )
+def set_webhook():
+    import asyncio
+    loop = asyncio.get_event_loop()
+    webhook_url = f"https://order-smoky.vercel.app/webhook"
+    loop.run_until_complete(app.bot.set_webhook(url=webhook_url))
+    logging.info(f"Webhook set to {webhook_url}")
 
 def main():
     if not BOT_TOKEN:
@@ -143,17 +150,13 @@ def main():
         level=logging.INFO
     )
 
-    Thread(target=run_flask).start()
-
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
-
+    # Add handlers
     app.add_handler(CommandHandler('start', start))
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, web_app_data_handler))
 
-    print("Bot running...")
-    app.run_polling()
+    # Set webhook
+    set_webhook()
 
 if __name__ == '__main__':
     main()
-    
