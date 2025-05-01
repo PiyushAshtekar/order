@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: flask-telegram-bot
+    env: python
+    plan: free
+    buildCommand: ""
+    startCommand: gunicorn app:flask_app
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        value: <YOUR_BOT_TOKEN>  # You can also set this directly via the Render dashboard
