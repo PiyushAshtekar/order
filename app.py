@@ -66,11 +66,18 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_carts[chat_id] = []
 
     # Send burger image
-    with open('static/burger.svg', 'rb') as photo:
-        await context.bot.send_photo(
+    try:
+        with open('static/burger.svg', 'rb') as photo:
+            await context.bot.send_photo(
+                chat_id=chat_id,
+                photo=photo,
+                caption="🍔 Welcome to Burger Bot! 🍔\n\nUse this bot to order fictional fast food – the only fast food that is good for your health!\n\nLet's get started! 🎉"
+            )
+    except Exception as e:
+        logging.error(f"Failed to send welcome image: {e}")
+        await context.bot.send_message(
             chat_id=chat_id,
-            photo=photo,
-            caption="🍔 Welcome to Burger Bot! 🍔\n\nUse this bot to order fictional fast food – the only fast food that is good for your health!\n\nLet's get started! 🎉"
+            text="🍔 Welcome to Burger Bot! 🍔\n\nUse this bot to order fictional fast food – the only fast food that is good for your health!\n\nLet's get started! 🎉"
         )
 
     keyboard = [
