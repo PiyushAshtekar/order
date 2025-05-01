@@ -114,22 +114,42 @@ async def web_app_data_handler(update: Update, context: ContextTypes.DEFAULT_TYP
 
     try:
         data = json.loads(update.message.web_app_data.data)
-        item = data['item']
+        items = data.get('items', [])
 
-        if item not in MENU_ITEMS:
-            await update.message.reply_text("❌ Invalid item.")
+        if not items:
+            await update.message.reply_text("❌ Cart is empty.")
             return
 
         chat_id = update.effective_chat.id
-        user_carts.setdefault(chat_id, []).append(item)
-        await update.message.reply_text(f"✅ {MENU_ITEMS[item]['name']} added to cart via Mini App!")
+        user_carts[chat_id] = []
+        
+        item_counts = {}
+        for item in items:
+            if item not in MENU_ITEMS:
+                await update.message.reply_text(f"❌ Invalid item: {item}")
+                continue
+                
+            user_carts[chat_id].append(item)
+            item_counts[item] = item_counts.get(item, 0) + 1
+
+        # Create a summary message
+        summary = "🛒 Added to cart:\n"
+        for item, count in item_counts.items():
+            summary += f"- {count}x {MENU_ITEMS[item]['name']}\n"
+        
+        await update.message.reply_text(summary)
     except Exception as e:
         print("❌ Error in web_app_data_handler:", e)
-        await update.message.reply_text("⚠️ Something went wrong adding your item.")
+        await update.message.reply_text("⚠️ Something went wrong adding your items.")
+
 
 def generate_invoice_pdf(chat_id, cart):
+    # Create a temporary directory if it doesn't exist
+    temp_dir = os.path.join(os.path.dirname(__file__), 'temp')
+    os.makedirs(temp_dir, exist_ok=True)
+    
     filename = f"invoice_{chat_id}_{uuid4().hex}.pdf"
-    file_path = os.path.join('/tmp', filename)  # Use /tmp for Vercel
+    file_path = os.path.join(temp_dir, filename)
 
     c = canvas.Canvas(file_path, pagesize=letter)
     c.setFont("Helvetica", 12)
