@@ -23,33 +23,39 @@
         .header {
             display: flex;
             align-items: center;
-            padding: 12px 16px;
+            padding: 16px;
             background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: none;
+            border-bottom: 1px solid #f0f0f0;
             position: sticky;
             top: 0;
             z-index: 100;
-            animation: slideUp 0.3s ease;
         }
 
         .back-button {
             font-size: 24px;
             background: none;
             border: none;
-            padding: 0 12px;
+            padding: 8px;
+            margin-right: 8px;
             cursor: pointer;
-            transition: transform 0.2s ease;
-        }
-
-        .back-button:hover {
-            transform: translateX(-4px);
+            color: #666;
         }
 
         .header-title {
-            flex-grow: 1;
-            font-size: 18px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .edit-button {
+            margin-left: auto;
+            color: #4CAF50;
             font-weight: 500;
-            margin-left: 8px;
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
         }
 
         .menu-grid {
@@ -166,82 +172,104 @@
 
         .order-summary {
             background: white;
-            border-radius: 12px;
             padding: 16px;
-            margin-bottom: 16px;
+            margin: 16px 0;
+            box-shadow: none;
+            border-radius: 0;
         }
 
         .order-item {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 12px;
-            align-items: center;
-            animation: fadeIn 0.3s ease;
-            transition: all 0.2s ease;
-        }
-
-        .order-item:hover {
-            transform: translateX(4px);
+            align-items: flex-start;
+            margin-bottom: 16px;
+            padding: 8px 0;
         }
 
         .order-item-left {
             display: flex;
-            align-items: center;
-            gap: 8px;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .order-item-image {
+            font-size: 32px;
+            margin-right: 8px;
+        }
+
+        .order-item-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .order-item-name {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
         }
 
         .order-item-quantity {
-            color: #4CAF50;
-            font-weight: 500;
+            color: #f4511e;
+            font-weight: 600;
+            margin-right: 4px;
         }
 
-        .order-total {
-            border-top: 1px solid #e0e0e0;
-            padding-top: 12px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
+        .order-item-variant {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .order-item-price {
+            font-weight: 500;
+            color: #333;
         }
 
         .comment-section {
             background: white;
-            border-radius: 12px;
             padding: 16px;
-            margin-bottom: 16px;
+            margin: 16px 0;
+            box-shadow: none;
+            border-radius: 0;
+        }
+
+        .comment-section-title {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 8px;
         }
 
         .comment-input {
             width: 100%;
-            min-height: 100px;
-            border: 1px solid #e0e0e0;
+            min-height: 120px;
+            border: none;
+            background: #f8f8f8;
             border-radius: 8px;
-            padding: 12px;
+            padding: 16px;
             margin-top: 8px;
             resize: none;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .comment-input::placeholder {
+            color: #999;
         }
 
         .pay-button {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
             background: #4CAF50;
             color: white;
             border: none;
-            border-radius: 8px;
-            padding: 16px;
-            width: 100%;
-            font-size: 16px;
+            border-radius: 0;
+            padding: 20px;
+            font-size: 18px;
+            font-weight: 500;
             cursor: pointer;
-            margin-top: 16px;
-            transition: all 0.3s ease;
-        }
-
-        .pay-button:hover {
-            background: #45a049;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-        }
-
-        .pay-button:active {
-            transform: scale(0.98);
-            animation: scaleButton 0.2s ease;
+            margin: 0;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
         }
 
         /* Add animation keyframes */
@@ -461,23 +489,20 @@
     <div id="order-page" class="page">
         <div class="header">
             <button class="back-button" onclick="showMenuPage()">←</button>
-            <div class="header-title">Your Order</div>
+            <div class="header-title">YOUR ORDER</div>
+            <button class="edit-button" onclick="showMenuPage()">Edit</button>
         </div>
 
-        <div class="order-summary">
-            <div id="order-items"></div>
-            <div class="order-total">
-                <span>Total</span>
-                <span id="order-total-amount">$0.00</span>
-            </div>
+        <div class="order-summary" id="order-items">
+            <!-- Order items will be populated here -->
         </div>
 
         <div class="comment-section">
-            <div>Add Comment</div>
+            <div class="comment-section-title">Add comment...</div>
             <textarea class="comment-input" placeholder="Any special requests, details, final wishes etc." id="order-comment"></textarea>
         </div>
 
-        <button class="pay-button" onclick="checkout()">Pay</button>
+        <button class="pay-button" onclick="checkout()">PAY $0.00</button>
     </div>
 
     <script>
@@ -534,16 +559,22 @@
                     orderItem.className = 'order-item';
                     orderItem.innerHTML = `
                         <div class="order-item-left">
-                            <span class="order-item-quantity">${qty}×</span>
-                            <span>${menuItem.querySelector('.item-name').textContent}</span>
+                            <div class="order-item-image">${menuItem.querySelector('.item-image').textContent}</div>
+                            <div class="order-item-details">
+                                <div class="order-item-name">
+                                    <span class="order-item-quantity">${qty}×</span>
+                                    ${menuItem.querySelector('.item-name').textContent}
+                                </div>
+                                <div class="order-item-variant">Regular</div>
+                            </div>
                         </div>
-                        <span>$${itemTotal.toFixed(2)}</span>
+                        <div class="order-item-price">$${itemTotal.toFixed(2)}</div>
                     `;
                     orderItems.appendChild(orderItem);
                 }
             }
 
-            document.getElementById('order-total-amount').textContent = `$${total.toFixed(2)}`;
+            document.querySelector('.pay-button').textContent = `PAY $${total.toFixed(2)}`;
         }
 
         function checkout() {
