@@ -66,15 +66,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_carts[chat_id] = []
 
     keyboard = [
-        [InlineKeyboardButton("🛒 Open Mini App Menu", web_app=WebAppInfo(url="https://order-rhgz.onrender.com/menu"))],
-        *[
-            [InlineKeyboardButton(f"{item['name']} - ${item['price']}", callback_data=key)]
-            for key, item in MENU_ITEMS.items()
-        ],
-        [InlineKeyboardButton("🛍 View Cart", callback_data='view_cart')],
+        [InlineKeyboardButton("🛒 Order Food", web_app=WebAppInfo(url="https://order-rhgz.onrender.com/menu"))]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text("Welcome! Select items or use Mini App:", reply_markup=reply_markup)
+    await update.message.reply_text("Welcome! Click the button below to order food:", reply_markup=reply_markup)
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
