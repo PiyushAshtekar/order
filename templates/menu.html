@@ -3,7 +3,97 @@
 <head>
     <title>Mini App Menu</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 20% auto;
+            padding: 20px;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+        }
+
+        .payment-options {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .payment-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cash-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .online-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .payment-icon {
+            font-size: 24px;
+        }
+
+        .qr-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        #qr-code {
+            padding: 16px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .confirm-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .confirm-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
         /* Base styles and resets */
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
@@ -375,7 +465,7 @@
             animation: slideUp 0.3s ease;
         }
 
-        /* Add animation keyframes */
+        /* Essential animations */
         @keyframes slideUp {
             from { transform: translateY(20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
@@ -386,45 +476,16 @@
             to { opacity: 1; }
         }
 
-        @keyframes scaleButton {
-            0% { transform: scale(1); }
-            50% { transform: scale(0.95); }
-            100% { transform: scale(1); }
+        /* Transitions */
+        .page, .menu-item, .item-image, .quantity-btn, .quantity,
+        .view-order-button, .order-item, .pay-button {
+            transition: all 0.3s ease;
         }
 
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-2px); }
-            75% { transform: translateX(2px); }
-        }
-
-        /* Add transitions and animations to existing elements */
-        .page {
-            transition: opacity 0.3s ease;
-            opacity: 0;
-            transform: translateY(20px);
-        }
-
+        /* Active states */
         .page.active {
             opacity: 1;
             transform: translateY(0);
-            animation: slideUp 0.3s ease forwards;
-        }
-
-        .menu-item {
-            transition: all 0.3s ease;
-            animation: fadeIn 0.5s ease;
         }
 
         .menu-item:hover {
@@ -432,84 +493,22 @@
             box-shadow: 0 6px 12px rgba(0,0,0,0.15);
         }
 
-        .item-image {
-            transition: transform 0.3s ease;
-        }
-
-        .menu-item:hover .item-image {
-            animation: bounce 0.8s ease infinite;
-        }
-
-        .quantity-btn {
-            transition: all 0.2s ease;
-        }
-
-        .quantity-btn:hover {
-            background: #d0d0d0;
-            transform: scale(1.1);
-        }
-
-        .quantity-btn:active {
-            transform: scale(0.9);
-            animation: shake 0.2s ease;
-        }
-
-        .quantity {
-            transition: all 0.2s ease;
-        }
-
-        .quantity:not(:empty) {
-            animation: pulse 0.3s ease;
-        }
-
-        .view-order-button {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            transform: translateY(100%);
-            opacity: 0;
-        }
+        .quantity-btn:hover { background: #d0d0d0; }
+        .quantity-btn:active { transform: scale(0.9); }
 
         .view-order-button.active {
             transform: translateY(0);
             opacity: 1;
-            animation: slideUp 0.3s ease;
         }
 
-        .view-order-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-        }
-
-        .view-order-button:active {
-            animation: scaleButton 0.2s ease;
-        }
-
-        .order-item {
-            animation: fadeIn 0.3s ease;
-            transition: all 0.2s ease;
-        }
-
-        .order-item:hover {
-            transform: translateX(4px);
-        }
-
-        .pay-button {
-            transition: all 0.3s ease;
-        }
-
+        .view-order-button:hover,
         .pay-button:hover {
-            background: #45a049;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
         }
 
-        .pay-button:active {
-            transform: scale(0.98);
-            animation: scaleButton 0.2s ease;
-        }
-
-        .header {
-            animation: slideUp 0.3s ease;
-        }
+        .order-item:hover { transform: translateX(4px); }
+        .pay-button:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
@@ -611,53 +610,606 @@
             <textarea class="comment-input" placeholder="Any special requests, details, final wishes etc." id="order-comment"></textarea>
         </div>
 
-        <button class="pay-button" onclick="checkout()">PAY $0.00</button>
+        <button class="pay-button" onclick="showPaymentModal()">PAY $0.00</button>
+
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="modal">
+        <div class="modal-content">
+            <h2>Select Payment Method</h2>
+            <div class="payment-options">
+                <button onclick="processCashPayment()" class="payment-btn cash-btn">
+                    <span class="payment-icon">💵</span>
+                    Cash Payment
+                </button>
+                <button onclick="processOnlinePayment()" class="payment-btn online-btn">
+                    <span class="payment-icon">💳</span>
+                    Online Payment
+                </button>
+            </div>
+        </div>
     </div>
 
-    <script>
-        let cart = {};
-        
-        function addItem(item) {
-            const menuItem = document.querySelector(`[data-item="${item}"]`);
-            const addButton = menuItem.querySelector('.add-button');
-            const controls = menuItem.querySelector('.quantity-controls');
-            
-            addButton.classList.add('hidden');
-            controls.classList.add('active');
-            updateQuantity(item, 1);
+    <!-- Online Payment Modal -->
+    <div id="online-payment-modal" class="modal">
+        <div class="modal-content">
+            <h2>Online Payment</h2>
+            <div class="qr-container">
+                <div id="qr-code"></div>
+                <p>UPI ID: merchant@upi</p>
+            </div>
+            <p>Scan QR code or use UPI ID to pay</p>
+            <button onclick="confirmOnlinePayment()" class="confirm-btn">Confirm Payment</button>
+        </div>
+    </div>
+
+    <!-- Order Success Modal -->
+    <div id="success-modal" class="modal">
+        <div class="modal-content">
+            <h2>Order Successful! 🎉</h2>
+            <div id="order-details"></div>
+            <button onclick="closeSuccessModal()" class="confirm-btn">Close</button>
+        </div>
+    </div>
+    </div>
+
+    <!-- Add this before closing </head> tag -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
         }
 
-        function updateQuantity(item, change) {
-            const qtyElement = document.getElementById(`${item}-qty`);
-            let qty = parseInt(qtyElement.textContent) + change;
-            qty = Math.max(0, qty);
-            
-            if (qty === 0) {
-                const menuItem = document.querySelector(`[data-item="${item}"]`);
-                const addButton = menuItem.querySelector('.add-button');
-                const controls = menuItem.querySelector('.quantity-controls');
-                
-                addButton.classList.remove('hidden');
-                controls.classList.remove('active');
+        .modal-content {
+            background-color: white;
+            margin: 20% auto;
+            padding: 20px;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+        }
+
+        .payment-options {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .payment-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cash-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .online-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .payment-icon {
+            font-size: 24px;
+        }
+
+        .qr-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        #qr-code {
+            padding: 16px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .confirm-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .confirm-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        /* Base styles and resets */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            max-width: 100vw;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Container styles */
+        .page {
+            padding: 0;
+            display: none;
+            min-height: 100vh;
+            padding-bottom: calc(80px + env(safe-area-inset-bottom));
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Header styles */
+        /* .header {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: white;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            gap: 12px;
+            justify-content: center;
+            max-width: 100vw;
+            border-radius: 0 0 12px 12px;
+            text-align: center;
+        } */
+
+        .back-button {
+            font-size: 24px;
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            color: #333;
+        }
+
+        /* .header-title {
+            flex: 1;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        } */
+
+        .edit-button {
+            font-size: 16px;
+            color: #4CAF50;
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        /* Order summary styles */
+        .order-summary {
+            background: white;
+            margin: 16px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .order-item-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .order-item-image {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .order-item-details {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .order-item-name {
+            font-size: 16px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .order-item-quantity {
+            color: #ff6b35;
+            font-weight: 600;
+        }
+
+        .order-item-variant {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .order-item-price {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        /* Comment section styles */
+        .comment-section {
+            margin: 16px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .comment-section-title {
+            color: #666;
+            font-size: 16px;
+            padding: 16px 16px 8px 16px;
+        }
+
+        .comment-input {
+            width: 100%;
+            min-height: 120px;
+            border: none;
+            padding: 16px;
+            font-size: 16px;
+            color: #333;
+            background: white;
+            resize: none;
+            box-sizing: border-box;
+        }
+
+        .comment-input::placeholder {
+            color: #999;
+        }
+
+        /* Pay button styles */
+        .pay-button {
+            position: fixed;
+            bottom: 16px;
+            left: 16px;
+            transform: translateX(-50%);
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: pulseButton 2s infinite;
+        }
+
+        .pay-button:hover {
+            transform: scale(1.02);
+            background: #45a049;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+        }
+
+        .pay-button:active {
+            transform: scale(0.98);
+        }
+
+        @keyframes pulseButton {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        /* Responsive adjustments */
+        @media (min-width: 768px) {
+            .page {
+                max-width: 600px;
+                margin: 0 auto;
             }
             
-            qtyElement.textContent = qty;
-            cart[item] = qty;
+            .header {
+                max-width: 600px;
+                margin: 0 auto;
+            }
+            
+            .pay-button {
+                max-width: 600px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+        }
+
+        @media (max-width: 380px) {
+            .order-item {
+                padding: 12px;
+            }
+            
+            .order-item-image {
+                width: 40px;
+                height: 40px;
+                font-size: 28px;
+            }
+            
+            .order-item-name {
+                font-size: 14px;
+            }
+            
+            .order-item-price {
+                font-size: 14px;
+            }
+        }
+
+        /* Safe area adjustments for modern mobile devices */
+        @supports (padding: max(0px)) {
+            .pay-button {
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
+            }
+            
+            .page {
+                padding-bottom: max(80px, calc(80px + env(safe-area-inset-bottom)));
+            }
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            padding: 12px;
+            margin: 0 auto 80px;
+            max-width: 600px;
+        }
+
+        .menu-item {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .item-image {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .item-name {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .item-price {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .quantity-controls {
+            display: none;  /* Initially hidden */
+            justify-content: space-between;
+            align-items: center;
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 4px 12px;
+            margin-top: 8px;
+        }
+
+        .add-button {
+            background: #ffa726;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 24px;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            display: block;  /* Initially visible */
+        }
+
+        .quantity-btn {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+
+        .quantity {
+            font-size: 14px;
+            color: #333;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .quantity-controls.active {
+            display: flex;
+        }
+
+        .add-button.hidden {
+            display: none;
+        }
+
+        .view-order-button {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 16px;
+            font-size: 16px;
+            cursor: pointer;
+            display: none;
+            z-index: 100;
+            border-radius: 16px;
+        }
+
+        .view-order-button.active {
+            display: block;
+            transform: translateY(0);
+            opacity: 1;
+            animation: slideUp 0.3s ease;
+        }
+
+        .view-order-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .view-order-button:active {
+            animation: scaleButton 0.2s ease;
+        }
+
+        .order-item {
+            animation: fadeIn 0.3s ease;
+            transition: all 0.2s ease;
+        }
+
+        .order-item:hover {
+            transform: translateX(4px);
+        }
+
+        .header {
+            animation: slideUp 0.3s ease;
+        }
+
+        /* Essential animations */
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Transitions */
+        .page, .menu-item, .item-image, .quantity-btn, .quantity,
+        .view-order-button, .order-item, .pay-button {
+            transition: all 0.3s ease;
+        }
+
+        /* Active states */
+        .page.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .menu-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .quantity-btn:hover { background: #d0d0d0; }
+        .quantity-btn:active { transform: scale(0.9); }
+
+        .view-order-button.active {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .view-order-button:hover,
+        .pay-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .order-item:hover { transform: translateX(4px); }
+        .pay-button:active { transform: scale(0.98); }
+    </style>
+
+    <!-- Modify the existing script section -->
+    <script>
+        let cart = {};
+
+        function addItem(item) {
+            const addButton = document.querySelector(`[data-item="${item}"] .add-button`);
+            const quantityControls = document.querySelector(`[data-item="${item}"] .quantity-controls`);
+            const quantityElement = document.getElementById(`${item}-qty`);
+
+            cart[item] = (cart[item] || 0) + 1;
+            quantityElement.textContent = cart[item];
+
+            addButton.classList.add('hidden');
+            quantityControls.classList.add('active');
+
+            updateViewOrderButton();
+        }
+
+        function updateQuantity(item, delta) {
+            const addButton = document.querySelector(`[data-item="${item}"] .add-button`);
+            const quantityControls = document.querySelector(`[data-item="${item}"] .quantity-controls`);
+            const quantityElement = document.getElementById(`${item}-qty`);
+
+            cart[item] = (cart[item] || 0) + delta;
+            
+            if (cart[item] <= 0) {
+                delete cart[item];
+                addButton.classList.remove('hidden');
+                quantityControls.classList.remove('active');
+            }
+
+            quantityElement.textContent = cart[item] || 0;
             updateViewOrderButton();
         }
 
         function updateViewOrderButton() {
-            const button = document.querySelector('.view-order-button');
-            const hasItems = Object.values(cart).some(qty => qty > 0);
-            button.classList.toggle('active', hasItems);
+            const viewOrderButton = document.querySelector('.view-order-button');
+            const totalItems = Object.values(cart).reduce((sum, quantity) => sum + quantity, 0);
 
-            if (hasItems) {
+            if (totalItems > 0) {
                 let total = 0;
-                for (const [item, qty] of Object.entries(cart)) {
+                for (const [item, quantity] of Object.entries(cart)) {
                     const price = parseFloat(document.querySelector(`[data-item="${item}"]`).dataset.price);
-                    total += price * qty;
+                    total += price * quantity;
                 }
-                button.textContent = `View Order • $${total.toFixed(2)}`;
+                viewOrderButton.textContent = `View Order (${totalItems} items - $${total.toFixed(2)})`;
+                viewOrderButton.classList.add('active');
+            } else {
+                viewOrderButton.classList.remove('active');
             }
         }
 
@@ -674,60 +1226,160 @@
 
         function updateOrderSummary() {
             const orderItems = document.getElementById('order-items');
-            orderItems.innerHTML = '';
+            const payButton = document.querySelector('.pay-button');
             let total = 0;
 
-            for (const [item, qty] of Object.entries(cart)) {
-                if (qty > 0) {
-                    const menuItem = document.querySelector(`[data-item="${item}"]`);
-                    const price = parseFloat(menuItem.dataset.price);
-                    const itemTotal = price * qty;
-                    total += itemTotal;
+            orderItems.innerHTML = '';
+            
+            for (const [item, quantity] of Object.entries(cart)) {
+                const menuItem = document.querySelector(`[data-item="${item}"]`);
+                const price = parseFloat(menuItem.dataset.price);
+                const itemTotal = price * quantity;
+                total += itemTotal;
 
-                    const orderItem = document.createElement('div');
-                    orderItem.className = 'order-item';
-                    orderItem.innerHTML = `
-                        <div class="order-item-left">
-                            <div class="order-item-image">${menuItem.querySelector('.item-image').textContent}</div>
-                            <div class="order-item-details">
-                                <div class="order-item-name">
-                                    <span class="order-item-quantity">${qty}×</span>
-                                    ${menuItem.querySelector('.item-name').textContent}
-                                </div>
-                                <div class="order-item-variant">Regular</div>
+                const itemElement = document.createElement('div');
+                itemElement.className = 'order-item';
+                itemElement.innerHTML = `
+                    <div class="order-item-left">
+                        <div class="order-item-image">${menuItem.querySelector('.item-image').textContent}</div>
+                        <div class="order-item-details">
+                            <div class="order-item-name">
+                                <span class="order-item-quantity">${quantity}×</span>
+                                ${menuItem.querySelector('.item-name').textContent}
                             </div>
                         </div>
-                        <div class="order-item-price">$${itemTotal.toFixed(2)}</div>
-                    `;
-                    orderItems.appendChild(orderItem);
-                }
+                    </div>
+                    <div class="order-item-price">$${itemTotal.toFixed(2)}</div>
+                `;
+
+                orderItems.appendChild(itemElement);
             }
 
-            document.querySelector('.pay-button').textContent = `PAY $${total.toFixed(2)}`;
+            payButton.textContent = `PAY $${total.toFixed(2)}`;
         }
 
-        function checkout() {
-            const orderData = [];
-            const comment = document.getElementById('order-comment').value;
-
-            for (const [item, qty] of Object.entries(cart)) {
-                if (qty > 0) {
-                    for (let i = 0; i < qty; i++) {
-                        orderData.push(item);
-                    }
-                }
-            }
-
-            if (orderData.length > 0) {
-                Telegram.WebApp.sendData(JSON.stringify({
-                    items: orderData,
-                    comment: comment
-                }));
-            }
+        function showPaymentModal() {
+            document.getElementById('payment-modal').style.display = 'block';
         }
-        
-        Telegram.WebApp.ready();
-        Telegram.WebApp.expand();
+
+        function generateToken() {
+            return Math.random().toString(36).substr(2, 8).toUpperCase();
+        }
+
+        function generateCounterNumber() {
+            return Math.floor(Math.random() * 100) + 1;
+        }
+
+        function resetOrder() {
+            // Reset cart object
+            cart = {};
+            
+            // Reset all quantity displays
+            document.querySelectorAll('.quantity').forEach(qty => {
+                qty.textContent = '0';
+            });
+            
+            // Hide all quantity controls and show ADD buttons
+            document.querySelectorAll('.quantity-controls').forEach(control => {
+                control.classList.remove('active');
+            });
+            document.querySelectorAll('.add-button').forEach(btn => {
+                btn.classList.remove('hidden');
+            });
+            
+            // Reset view order button
+            const viewOrderBtn = document.querySelector('.view-order-button');
+            viewOrderBtn.classList.remove('active');
+            viewOrderBtn.style.display = 'none';
+            
+            // Reset total price
+            document.querySelector('.pay-button').textContent = 'PAY $0.00';
+            
+            // Clear comment
+            document.getElementById('order-comment').value = '';
+            
+            // Show menu page
+            showMenuPage();
+        }
+
+        function processCashPayment() {
+            const token = generateToken();
+            const orderDetails = {
+                token: token,
+                items: Object.entries(cart).map(([item, quantity]) => ({ item, quantity })),
+                comment: document.getElementById('order-comment').value,
+                paymentMethod: 'cash'
+            };
+
+            document.getElementById('payment-modal').style.display = 'none';
+            document.getElementById('order-details').innerHTML = `
+                <p>Your Token Number: <strong>${token}</strong></p>
+                <p>Please show this token at the counter to collect your order.</p>
+            `;
+            document.getElementById('success-modal').style.display = 'block';
+
+            // Send to Telegram bot
+            window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
+            
+            // Reset the order
+            resetOrder();
+        }
+
+        function processOnlinePayment() {
+            document.getElementById('payment-modal').style.display = 'none';
+            document.getElementById('online-payment-modal').style.display = 'block';
+
+            // Generate QR code
+            const qrContainer = document.getElementById('qr-code');
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: 'upi://pay?pa=merchant@upi&pn=Restaurant&am=' + calculateTotal(),
+                width: 200,
+                height: 200
+            });
+        }
+
+        function calculateTotal() {
+            let total = 0;
+            for (const [item, quantity] of Object.entries(cart)) {
+                const price = parseFloat(document.querySelector(`[data-item="${item}"]`).dataset.price);
+                total += price * quantity;
+            }
+            return total.toFixed(2);
+        }
+
+        function confirmOnlinePayment() {
+            const counterNumber = generateCounterNumber();
+            
+            // Reset the order after successful payment
+            resetOrder();
+            
+            // Hide payment modal
+            document.getElementById('online-payment-modal').style.display = 'none';
+            const orderDetails = {
+                counterNumber: counterNumber,
+                items: Object.entries(cart).map(([item, quantity]) => ({ item, quantity })),
+                comment: document.getElementById('order-comment').value,
+                paymentMethod: 'online'
+            };
+
+            document.getElementById('online-payment-modal').style.display = 'none';
+            document.getElementById('order-details').innerHTML = `
+                <p>Counter Number: <strong>${counterNumber}</strong></p>
+                <p>Please collect your order from counter ${counterNumber}.</p>
+            `;
+            document.getElementById('success-modal').style.display = 'block';
+
+            // Send to Telegram bot
+            window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('success-modal').style.display = 'none';
+            cart = {};
+            showMenuPage();
+            updateViewOrderButton();
+        }
     </script>
 </body>
 </html>
