@@ -438,13 +438,13 @@
         }
 
         .quantity-btn-plus {
-            background: linear-gradient(145deg, #ff8f66, #ff6b35);
+            background: #ffa726;
             border: none;
             color: white;
             font-size: 18px;
             cursor: pointer;
             padding: 6px 12px;
-            border-radius: 12px;
+            border-radius: 8px;
             /* box-shadow: 0 2px 4px rgba(255, 107, 53, 0.2);
             transition: all 0.3s ease; */
             width: 2rem;
@@ -461,9 +461,17 @@
 
         .quantity {
             font-size: 14px;
+            font-weight: 600;
             color: #333;
             min-width: 24px;
             text-align: center;
+            background: none;
+            position: static;
+            border-radius: 0;
+            padding: 0;
+            height: auto;
+            display: inline;
+            box-shadow: none;
         }
 
         .quantity-controls.active {
@@ -567,9 +575,7 @@
         .pay-button:active { transform: scale(0.98); }
 
         /* Flip in from left */
-        .quantity-controls.flip-in {
-            animation: flipInLeft 0.4s forwards;
-        }
+        .quantity-controls.flip-in { animation: flipInLeft 0.6s forwards; }
         @keyframes flipInLeft {
             from {
                 opacity: 0;
@@ -581,9 +587,7 @@
             }
         }
         /* Flip out to right */
-        .quantity-controls.flip-out {
-            animation: flipOutRight 0.4s forwards;
-        }
+        .quantity-controls.flip-out { animation: flipOutRight 0.6s forwards; }
         @keyframes flipOutRight {
             from {
                 opacity: 1;
@@ -595,9 +599,7 @@
             }
         }
         /* Flip in from right */
-        .add-button.flip-in {
-            animation: flipInRight 0.4s forwards;
-        }
+        .add-button.flip-in { animation: flipInRight 0.6s forwards; }
         @keyframes flipInRight {
             from {
                 opacity: 0;
@@ -609,9 +611,7 @@
             }
         }
         /* Flip out to left */
-        .add-button.flip-out {
-            animation: flipOutLeft 0.4s forwards;
-        }
+        .add-button.flip-out { animation: flipOutLeft 0.6s forwards; }
         @keyframes flipOutLeft {
             from {
                 opacity: 1;
@@ -622,6 +622,28 @@
                 transform: rotateY(-90deg);
             }
         }
+
+        .quantity-badge {
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            text-align: center;
+            position: absolute;
+            top: 5%;
+            right: 10%;
+            background: #ff6b35;
+            border-radius: 50%;
+            padding: 2px;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 2;
+        }
+        .quantity-badge.flip-in { animation: flipInRight 0.6s forwards; }
+        .quantity-badge.flip-out { animation: flipOutLeft 0.6s forwards; }
     </style>
 </head>
 <body>
@@ -635,10 +657,10 @@
                 <div class="item-image">🍔</div>
                 <div class="item-name">Burger</div>
                 <div class="item-price">₹150</div>
+                <span class="quantity-badge" id="burger-badge" style="display:none;">0</span>
                 <button class="add-button" onclick="addItem('burger')">ADD</button>
                 <div class="quantity-controls">
                     <button class="quantity-btn-minus" onclick="updateQuantity('burger', -1)">-</button>
-                    <span class="quantity" id="burger-qty">0</span>
                     <button class="quantity-btn-plus" onclick="updateQuantity('burger', 1)">+</button>
                 </div>
             </div>
@@ -647,10 +669,10 @@
                 <div class="item-image">🍟</div>
                 <div class="item-name">Fries</div>
                 <div class="item-price">₹100</div>
+                <span class="quantity-badge" id="fries-badge" style="display:none;">0</span>
                 <button class="add-button" onclick="addItem('fries')">ADD</button>
                 <div class="quantity-controls">
                     <button class="quantity-btn-minus" onclick="updateQuantity('fries', -1)">-</button>
-                    <span class="quantity" id="fries-qty">0</span>
                     <button class="quantity-btn-plus" onclick="updateQuantity('fries', 1)">+</button>
                 </div>
             </div>
@@ -659,10 +681,10 @@
                 <div class="item-image">🌭</div>
                 <div class="item-name">Hotdog</div>
                 <div class="item-price">₹200</div>
+                <span class="quantity-badge" id="hotdog-badge" style="display:none;">0</span>
                 <button class="add-button" onclick="addItem('hotdog')">ADD</button>
                 <div class="quantity-controls">
                     <button class="quantity-btn-minus" onclick="updateQuantity('hotdog', -1)">-</button>
-                    <span class="quantity" id="hotdog-qty">0</span>
                     <button class="quantity-btn-plus" onclick="updateQuantity('hotdog', 1)">+</button>
                 </div>
             </div>
@@ -671,10 +693,10 @@
                 <div class="item-image">🌮</div>
                 <div class="item-name">Taco</div>
                 <div class="item-price">₹150</div>
+                <span class="quantity-badge" id="taco-badge" style="display:none;">0</span>
                 <button class="add-button" onclick="addItem('taco')">ADD</button>
                 <div class="quantity-controls">
                     <button class="quantity-btn-minus" onclick="updateQuantity('taco', -1)">-</button>
-                    <span class="quantity" id="taco-qty">0</span>
                     <button class="quantity-btn-plus" onclick="updateQuantity('taco', 1)">+</button>
                 </div>
             </div>
@@ -683,10 +705,10 @@
                 <div class="item-image">🍕</div>
                 <div class="item-name">Pizza</div>
                 <div class="item-price">₹350</div>
+                <span class="quantity-badge" id="pizza-badge" style="display:none;">0</span>
                 <button class="add-button" onclick="addItem('pizza')">ADD</button>
                 <div class="quantity-controls">
                     <button class="quantity-btn-minus" onclick="updateQuantity('pizza', -1)">-</button>
-                    <span class="quantity" id="pizza-qty">0</span>
                     <button class="quantity-btn-plus" onclick="updateQuantity('pizza', 1)">+</button>
                 </div>
             </div>
@@ -695,10 +717,10 @@
                 <div class="item-image">🍩</div>
                 <div class="item-name">Donut</div>
                 <div class="item-price">₹80</div>
+                <span class="quantity-badge" id="donut-badge" style="display:none;">0</span>
                 <button class="add-button" onclick="addItem('donut')">ADD</button>
                 <div class="quantity-controls">
                     <button class="quantity-btn-minus" onclick="updateQuantity('donut', -1)">-</button>
-                    <span class="quantity" id="donut-qty">0</span>
                     <button class="quantity-btn-plus" onclick="updateQuantity('donut', 1)">+</button>
                 </div>
             </div>
@@ -1190,7 +1212,7 @@
         }
 
         .quantity-btn-plus {
-            background: linear-gradient(145deg, #ff8f66, #ff6b35);
+            background: #ffa726;
             border: none;
             color: white;
             font-size: 18px;
@@ -1212,22 +1234,18 @@
         }
 
         .quantity {
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 600;
-            color: white;
+            color: #333;
+            min-width: 24px;
             text-align: center;
-            position: absolute;
-            top: 5%;
-            right: 10%;
-            background: #ff6b35;
-            border-radius: 50%;
-            padding: 2px;
-            min-width: 18px;
-            height: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: none;
+            position: static;
+            border-radius: 0;
+            padding: 0;
+            height: auto;
+            display: inline;
+            box-shadow: none;
         }
 
         .quantity-controls.active {
@@ -1329,6 +1347,77 @@
 
         .order-item:hover { transform: translateX(4px); }
         .pay-button:active { transform: scale(0.98); }
+
+        /* Flip in from left */
+        .quantity-controls.flip-in { animation: flipInLeft 0.6s forwards; }
+        @keyframes flipInLeft {
+            from {
+                opacity: 0;
+                transform: rotateY(-90deg);
+            }
+            to {
+                opacity: 1;
+                transform: rotateY(0deg);
+            }
+        }
+        /* Flip out to right */
+        .quantity-controls.flip-out { animation: flipOutRight 0.6s forwards; }
+        @keyframes flipOutRight {
+            from {
+                opacity: 1;
+                transform: rotateY(0deg);
+            }
+            to {
+                opacity: 0;
+                transform: rotateY(90deg);
+            }
+        }
+        /* Flip in from right */
+        .add-button.flip-in { animation: flipInRight 0.6s forwards; }
+        @keyframes flipInRight {
+            from {
+                opacity: 0;
+                transform: rotateY(90deg);
+            }
+            to {
+                opacity: 1;
+                transform: rotateY(0deg);
+            }
+        }
+        /* Flip out to left */
+        .add-button.flip-out { animation: flipOutLeft 0.6s forwards; }
+        @keyframes flipOutLeft {
+            from {
+                opacity: 1;
+                transform: rotateY(0deg);
+            }
+            to {
+                opacity: 0;
+                transform: rotateY(-90deg);
+            }
+        }
+
+        .quantity-badge {
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            text-align: center;
+            position: absolute;
+            top: 5%;
+            right: 10%;
+            background: #ff6b35;
+            border-radius: 50%;
+            padding: 2px;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 2;
+        }
+        .quantity-badge.flip-in { animation: flipInRight 0.6s forwards; }
+        .quantity-badge.flip-out { animation: flipOutLeft 0.6s forwards; }
     </style>
 
     <!-- Modify the existing script section -->
@@ -1338,10 +1427,19 @@
         function addItem(item) {
             const addButton = document.querySelector(`[data-item="${item}"] .add-button`);
             const quantityControls = document.querySelector(`[data-item="${item}"] .quantity-controls`);
-            const quantityElement = document.getElementById(`${item}-qty`);
 
             cart[item] = (cart[item] || 0) + 1;
-            quantityElement.textContent = cart[item];
+
+            // Show badge with animation
+            const badge = document.getElementById(`${item}-badge`);
+            badge.textContent = cart[item];
+            badge.classList.remove('flip-out');
+            badge.style.display = 'flex';
+            badge.classList.add('flip-in');
+            badge.addEventListener('animationend', function handler() {
+                badge.classList.remove('flip-in');
+                badge.removeEventListener('animationend', handler);
+            });
 
             // Animate add button out with flip, then show quantity controls with flip-in
             addButton.classList.add('flip-out');
@@ -1361,9 +1459,29 @@
         function updateQuantity(item, delta) {
             const addButton = document.querySelector(`[data-item="${item}"] .add-button`);
             const quantityControls = document.querySelector(`[data-item="${item}"] .quantity-controls`);
-            const quantityElement = document.getElementById(`${item}-qty`);
 
             cart[item] = (cart[item] || 0) + delta;
+
+            // Update badge with animation
+            const badge = document.getElementById(`${item}-badge`);
+            if (cart[item] > 0) {
+                badge.textContent = cart[item];
+                badge.classList.remove('flip-out');
+                badge.style.display = 'flex';
+                badge.classList.add('flip-in');
+                badge.addEventListener('animationend', function handler() {
+                    badge.classList.remove('flip-in');
+                    badge.removeEventListener('animationend', handler);
+                });
+            } else {
+                badge.classList.remove('flip-in');
+                badge.classList.add('flip-out');
+                badge.addEventListener('animationend', function handler() {
+                    badge.style.display = 'none';
+                    badge.classList.remove('flip-out');
+                    badge.removeEventListener('animationend', handler);
+                });
+            }
 
             if (cart[item] <= 0) {
                 delete cart[item];
@@ -1381,7 +1499,6 @@
                 });
             }
 
-            quantityElement.textContent = cart[item] || 0;
             updateViewOrderButton();
         }
 
