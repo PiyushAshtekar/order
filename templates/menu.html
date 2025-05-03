@@ -107,14 +107,19 @@
 
         /* Container styles */
         .page {
-            padding: 0;
-            display: none;
             min-height: 100vh;
-            padding-bottom: calc(80px + env(safe-area-inset-bottom));
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 0; /* Remove extra padding, handled by button */
         }
 
         .page.active {
-            display: block;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            min-height: 100vh;
+            overflow: hidden; /* Prevent double scrollbars */
         }
 
         /* Header styles */
@@ -358,6 +363,9 @@
         }
 
         .menu-grid {
+            flex: 1 1 auto;
+            overflow-y: auto;
+            max-height: none; /* Remove fixed max-height */
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             padding: 12px;
@@ -485,7 +493,7 @@
 
         .view-order-button {
             position: fixed;
-            /* bottom: 16px; */
+            bottom: 16px;
             left: 0;
             right: 0;
             background: #4CAF50;
