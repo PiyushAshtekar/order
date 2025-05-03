@@ -230,7 +230,7 @@
 
         .order-item-price {
             font-size: 16px;
-            font-weight: 500;
+            font-weight: 600;
             color: #333;
         }
 
@@ -337,6 +337,7 @@
             
             .order-item-price {
                 font-size: 14px;
+                font-weight: 600;
             }
 
             .menu-grid {
@@ -380,9 +381,10 @@
         }
 
         .item-price {
-            font-size: 14px;
+            font-size: 16px;
             color: #666;
             margin-bottom: 12px;
+            font-weight: 600;
         }
 
         .quantity-controls {
@@ -403,11 +405,14 @@
             color: white;
             border: none;
             border-radius: 8px;
-            padding: 8px 24px;
+            padding: 8px;
             font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
-            width: 100%;
+            width: 68px;
             display: block;  /* Initially visible */
+            margin: 0 auto;
+            text-align: center;
         }
 
         .quantity-btn-minus {
@@ -560,6 +565,63 @@
 
         .order-item:hover { transform: translateX(4px); }
         .pay-button:active { transform: scale(0.98); }
+
+        /* Flip in from left */
+        .quantity-controls.flip-in {
+            animation: flipInLeft 0.4s forwards;
+        }
+        @keyframes flipInLeft {
+            from {
+                opacity: 0;
+                transform: rotateY(-90deg);
+            }
+            to {
+                opacity: 1;
+                transform: rotateY(0deg);
+            }
+        }
+        /* Flip out to right */
+        .quantity-controls.flip-out {
+            animation: flipOutRight 0.4s forwards;
+        }
+        @keyframes flipOutRight {
+            from {
+                opacity: 1;
+                transform: rotateY(0deg);
+            }
+            to {
+                opacity: 0;
+                transform: rotateY(90deg);
+            }
+        }
+        /* Flip in from right */
+        .add-button.flip-in {
+            animation: flipInRight 0.4s forwards;
+        }
+        @keyframes flipInRight {
+            from {
+                opacity: 0;
+                transform: rotateY(90deg);
+            }
+            to {
+                opacity: 1;
+                transform: rotateY(0deg);
+            }
+        }
+        /* Flip out to left */
+        .add-button.flip-out {
+            animation: flipOutLeft 0.4s forwards;
+        }
+        @keyframes flipOutLeft {
+            from {
+                opacity: 1;
+                transform: rotateY(0deg);
+            }
+            to {
+                opacity: 0;
+                transform: rotateY(-90deg);
+            }
+        }
     </style>
 </head>
 <body>
@@ -1071,9 +1133,10 @@
         }
 
         .item-price {
-            font-size: 14px;
+            font-size: 16px;
             color: #666;
             margin-bottom: 12px;
+            font-weight: 600;
         }
 
         .quantity-controls {
@@ -1094,11 +1157,14 @@
             color: white;
             border: none;
             border-radius: 8px;
-            padding: 8px 24px;
+            padding: 8px;
             font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
-            width: 100%;
+            width: 68px;
             display: block;  /* Initially visible */
+            margin: 0 auto;
+            text-align: center;
         }
 
         .quantity-btn-minus {
@@ -1277,9 +1343,18 @@
             cart[item] = (cart[item] || 0) + 1;
             quantityElement.textContent = cart[item];
 
-            addButton.classList.add('hidden');
-            quantityControls.classList.add('active');
-
+            // Animate add button out with flip, then show quantity controls with flip-in
+            addButton.classList.add('flip-out');
+            addButton.addEventListener('animationend', function handler() {
+                addButton.classList.remove('flip-out');
+                addButton.classList.add('hidden');
+                quantityControls.classList.add('active', 'flip-in');
+                quantityControls.addEventListener('animationend', function handler2() {
+                    quantityControls.classList.remove('flip-in');
+                    quantityControls.removeEventListener('animationend', handler2);
+                });
+                addButton.removeEventListener('animationend', handler);
+            });
             updateViewOrderButton();
         }
 
@@ -1289,11 +1364,21 @@
             const quantityElement = document.getElementById(`${item}-qty`);
 
             cart[item] = (cart[item] || 0) + delta;
-            
+
             if (cart[item] <= 0) {
                 delete cart[item];
-                addButton.classList.remove('hidden');
-                quantityControls.classList.remove('active');
+                // Animate quantity controls out with flip, then show add button with flip-in
+                quantityControls.classList.add('flip-out');
+                quantityControls.addEventListener('animationend', function handler() {
+                    quantityControls.classList.remove('active', 'flip-out');
+                    addButton.classList.remove('hidden');
+                    addButton.classList.add('flip-in');
+                    addButton.addEventListener('animationend', function handler2() {
+                        addButton.classList.remove('flip-in');
+                        addButton.removeEventListener('animationend', handler2);
+                    });
+                    quantityControls.removeEventListener('animationend', handler);
+                });
             }
 
             quantityElement.textContent = cart[item] || 0;
@@ -1394,16 +1479,6 @@
             // Reset view order button
             const viewOrderBtn = document.querySelector('.view-order-button');
             viewOrderBtn.classList.remove('active');
-            viewOrderBtn.style.display = 'none';
-            
-            // Reset total price
-            document.querySelector('.pay-button').textContent = 'PAY $0.00';
-            
-            // Clear comment
-            document.getElementById('order-comment').value = '';
-            
-            // Show menu page
-            showMenuPage();
         }
 
         function processCashPayment() {
