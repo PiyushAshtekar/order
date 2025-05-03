@@ -386,8 +386,11 @@
         }
 
         .quantity-controls {
+            display: flex;
+            flex-direction: row;
             display: none;  /* Initially hidden */
-            justify-content: space-between;
+            justify-content: center;
+            gap: 8px;
             align-items: center;
             background: #f5f5f5;
             border-radius: 8px;
@@ -407,13 +410,48 @@
             display: block;  /* Initially visible */
         }
 
-        .quantity-btn {
-            background: none;
+        .quantity-btn-minus {
+            background: linear-gradient(145deg, #ff4d4d, #ff0000);
             border: none;
-            color: #666;
+            color: white;
             font-size: 18px;
             cursor: pointer;
-            padding: 4px 8px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(255, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            width: 2rem;
+        }
+
+        .quantity-btn-minus:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 0, 0, 0.3);
+        }
+
+        .quantity-btn-minus:active {
+            transform: scale(0.95);
+        }
+
+        .quantity-btn-plus {
+            background: linear-gradient(145deg, #ff8f66, #ff6b35);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(255, 107, 53, 0.2);
+            transition: all 0.3s ease;
+            width: 2rem;
+        }
+
+        .quantity-btn-plus:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+        }
+
+        .quantity-btn-plus:active {
+            transform: scale(0.95);
         }
 
         .quantity {
@@ -537,10 +575,11 @@
                 <div class="item-price">$4.99</div>
                 <button class="add-button" onclick="addItem('burger')">ADD</button>
                 <div class="quantity-controls">
-                    <button class="quantity-btn" onclick="updateQuantity('burger', -1)">-</button>
-                    <span class="quantity" id="burger-qty">0</span>
-                    <button class="quantity-btn" onclick="updateQuantity('burger', 1)">+</button>
+                    <button class="quantity-btn-minus" onclick="updateQuantity('burger', -1)">-</button>
+                    
+                    <button class="quantity-btn-plus" onclick="updateQuantity('burger', 1)">+</button>
                 </div>
+                <span class="quantity" id="burger-qty">0</span>
             </div>
             
             <div class="menu-item" data-item="fries" data-price="1.49">
@@ -549,9 +588,9 @@
                 <div class="item-price">$1.49</div>
                 <button class="add-button" onclick="addItem('fries')">ADD</button>
                 <div class="quantity-controls">
-                    <button class="quantity-btn" onclick="updateQuantity('fries', -1)">-</button>
+                    <button class="quantity-btn-minus" onclick="updateQuantity('fries', -1)">-</button>
                     <span class="quantity" id="fries-qty">0</span>
-                    <button class="quantity-btn" onclick="updateQuantity('fries', 1)">+</button>
+                    <button class="quantity-btn-plus" onclick="updateQuantity('fries', 1)">+</button>
                 </div>
             </div>
 
@@ -561,9 +600,9 @@
                 <div class="item-price">$3.49</div>
                 <button class="add-button" onclick="addItem('hotdog')">ADD</button>
                 <div class="quantity-controls">
-                    <button class="quantity-btn" onclick="updateQuantity('hotdog', -1)">-</button>
+                    <button class="quantity-btn-minus" onclick="updateQuantity('hotdog', -1)">-</button>
                     <span class="quantity" id="hotdog-qty">0</span>
-                    <button class="quantity-btn" onclick="updateQuantity('hotdog', 1)">+</button>
+                    <button class="quantity-btn-plus" onclick="updateQuantity('hotdog', 1)">+</button>
                 </div>
             </div>
 
@@ -573,9 +612,9 @@
                 <div class="item-price">$3.99</div>
                 <button class="add-button" onclick="addItem('taco')">ADD</button>
                 <div class="quantity-controls">
-                    <button class="quantity-btn" onclick="updateQuantity('taco', -1)">-</button>
+                    <button class="quantity-btn-minus" onclick="updateQuantity('taco', -1)">-</button>
                     <span class="quantity" id="taco-qty">0</span>
-                    <button class="quantity-btn" onclick="updateQuantity('taco', 1)">+</button>
+                    <button class="quantity-btn-plus" onclick="updateQuantity('taco', 1)">+</button>
                 </div>
             </div>
 
@@ -585,9 +624,9 @@
                 <div class="item-price">$7.99</div>
                 <button class="add-button" onclick="addItem('pizza')">ADD</button>
                 <div class="quantity-controls">
-                    <button class="quantity-btn" onclick="updateQuantity('pizza', -1)">-</button>
+                    <button class="quantity-btn-minus" onclick="updateQuantity('pizza', -1)">-</button>
                     <span class="quantity" id="pizza-qty">0</span>
-                    <button class="quantity-btn" onclick="updateQuantity('pizza', 1)">+</button>
+                    <button class="quantity-btn-plus" onclick="updateQuantity('pizza', 1)">+</button>
                 </div>
             </div>
 
@@ -597,9 +636,9 @@
                 <div class="item-price">$1.49</div>
                 <button class="add-button" onclick="addItem('donut')">ADD</button>
                 <div class="quantity-controls">
-                    <button class="quantity-btn" onclick="updateQuantity('donut', -1)">-</button>
+                    <button class="quantity-btn-minus" onclick="updateQuantity('donut', -1)">-</button>
                     <span class="quantity" id="donut-qty">0</span>
-                    <button class="quantity-btn" onclick="updateQuantity('donut', 1)">+</button>
+                    <button class="quantity-btn-plus" onclick="updateQuantity('donut', 1)">+</button>
                 </div>
             </div>
 
@@ -609,9 +648,9 @@
                 <div class="item-price">$4.99</div>
                 <button class="add-button" onclick="addItem('burger')">ADD</button>
                 <div class="quantity-controls">
-                    <button class="quantity-btn" onclick="updateQuantity('burger', -1)">-</button>
+                    <button class="quantity-btn-minus" onclick="updateQuantity('burger', -1)">-</button>
                     <span class="quantity" id="burger-qty">0</span>
-                    <button class="quantity-btn" onclick="updateQuantity('burger', 1)">+</button>
+                    <button class="quantity-btn-plus" onclick="updateQuantity('burger', 1)">+</button>
                 </div>
             </div>
             
@@ -621,9 +660,9 @@
                 <div class="item-price">$1.49</div>
                 <button class="add-button" onclick="addItem('fries')">ADD</button>
                 <div class="quantity-controls">
-                    <button class="quantity-btn" onclick="updateQuantity('fries', -1)">-</button>
+                    <button class="quantity-btn-minus" onclick="updateQuantity('fries', -1)">-</button>
                     <span class="quantity" id="fries-qty">0</span>
-                    <button class="quantity-btn" onclick="updateQuantity('fries', 1)">+</button>
+                    <button class="quantity-btn-plus" onclick="updateQuantity('fries', 1)">+</button>
                 </div>
             </div>
 
@@ -633,9 +672,9 @@
                 <div class="item-price">$3.49</div>
                 <button class="add-button" onclick="addItem('hotdog')">ADD</button>
                 <div class="quantity-controls">
-                    <button class="quantity-btn" onclick="updateQuantity('hotdog', -1)">-</button>
+                    <button class="quantity-btn-minus" onclick="updateQuantity('hotdog', -1)">-</button>
                     <span class="quantity" id="hotdog-qty">0</span>
-                    <button class="quantity-btn" onclick="updateQuantity('hotdog', 1)">+</button>
+                    <button class="quantity-btn-plus" onclick="updateQuantity('hotdog', 1)">+</button>
                 </div>
             </div>
 
@@ -645,9 +684,9 @@
                 <div class="item-price">$3.99</div>
                 <button class="add-button" onclick="addItem('taco')">ADD</button>
                 <div class="quantity-controls">
-                    <button class="quantity-btn" onclick="updateQuantity('taco', -1)">-</button>
+                    <button class="quantity-btn-minus" onclick="updateQuantity('taco', -1)">-</button>
                     <span class="quantity" id="taco-qty">0</span>
-                    <button class="quantity-btn" onclick="updateQuantity('taco', 1)">+</button>
+                    <button class="quantity-btn-plus" onclick="updateQuantity('taco', 1)">+</button>
                 </div>
             </div>
 
@@ -657,9 +696,9 @@
                 <div class="item-price">$7.99</div>
                 <button class="add-button" onclick="addItem('pizza')">ADD</button>
                 <div class="quantity-controls">
-                    <button class="quantity-btn" onclick="updateQuantity('pizza', -1)">-</button>
+                    <button class="quantity-btn-minus" onclick="updateQuantity('pizza', -1)">-</button>
                     <span class="quantity" id="pizza-qty">0</span>
-                    <button class="quantity-btn" onclick="updateQuantity('pizza', 1)">+</button>
+                    <button class="quantity-btn-plus" onclick="updateQuantity('pizza', 1)">+</button>
                 </div>
             </div>
 
@@ -669,9 +708,9 @@
                 <div class="item-price">$1.49</div>
                 <button class="add-button" onclick="addItem('donut')">ADD</button>
                 <div class="quantity-controls">
-                    <button class="quantity-btn" onclick="updateQuantity('donut', -1)">-</button>
+                    <button class="quantity-btn-minus" onclick="updateQuantity('donut', -1)">-</button>
                     <span class="quantity" id="donut-qty">0</span>
-                    <button class="quantity-btn" onclick="updateQuantity('donut', 1)">+</button>
+                    <button class="quantity-btn-plus" onclick="updateQuantity('donut', 1)">+</button>
                 </div>
             </div>
         
@@ -1089,6 +1128,7 @@
         .menu-item {
             padding: 16px;
             text-align: center;
+            position: relative;
         }
 
         .item-image {
@@ -1109,8 +1149,11 @@
         }
 
         .quantity-controls {
+            display: flex;
+            flex-direction: row;
             display: none;  /* Initially hidden */
-            justify-content: space-between;
+            justify-content: center;
+            gap: 8px;
             align-items: center;
             background: #f5f5f5;
             border-radius: 8px;
@@ -1130,20 +1173,67 @@
             display: block;  /* Initially visible */
         }
 
-        .quantity-btn {
-            background: none;
+        .quantity-btn-minus {
+            background: linear-gradient(145deg, #ff4d4d, #ff0000);
             border: none;
-            color: #666;
+            color: white;
             font-size: 18px;
             cursor: pointer;
-            padding: 4px 8px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(255, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            width: 2rem;
+        }
+
+        .quantity-btn-minus:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 0, 0, 0.3);
+        }
+
+        .quantity-btn-minus:active {
+            transform: scale(0.95);
+        }
+
+        .quantity-btn-plus {
+            background: linear-gradient(145deg, #ff8f66, #ff6b35);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(255, 107, 53, 0.2);
+            transition: all 0.3s ease;
+            width: 2rem;
+        }
+
+        .quantity-btn-plus:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+        }
+
+        .quantity-btn-plus:active {
+            transform: scale(0.95);
         }
 
         .quantity {
-            font-size: 14px;
-            color: #333;
-            min-width: 24px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
             text-align: center;
+            position: absolute;
+            top: 5%;
+            right: 10%;
+            background: #ff6b35;
+            border-radius: 50%;
+            padding: 2px;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .quantity-controls.active {
