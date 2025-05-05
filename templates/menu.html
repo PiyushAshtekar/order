@@ -662,7 +662,7 @@
         </div>
 
         <div class="menu-grid">
-            <div class="menu-item" data-item="burger" data-price="4.99">
+            <div class="menu-item" data-item="burger" data-price="150">
                 <div class="item-image">🍔</div>
                 <div class="item-name">Burger</div>
                 <div class="item-price">₹150</div>
@@ -674,7 +674,7 @@
                 </div>
             </div>
             
-            <div class="menu-item" data-item="fries" data-price="1.49">
+            <div class="menu-item" data-item="fries" data-price="100">
                 <div class="item-image">🍟</div>
                 <div class="item-name">Fries</div>
                 <div class="item-price">₹100</div>
@@ -686,7 +686,7 @@
                 </div>
             </div>
 
-            <div class="menu-item" data-item="hotdog" data-price="3.49">
+            <div class="menu-item" data-item="hotdog" data-price="200">
                 <div class="item-image">🌭</div>
                 <div class="item-name">Hotdog</div>
                 <div class="item-price">₹200</div>
@@ -698,7 +698,7 @@
                 </div>
             </div>
 
-            <div class="menu-item" data-item="taco" data-price="3.99">
+            <div class="menu-item" data-item="taco" data-price="150">
                 <div class="item-image">🌮</div>
                 <div class="item-name">Taco</div>
                 <div class="item-price">₹150</div>
@@ -710,7 +710,7 @@
                 </div>
             </div>
 
-            <div class="menu-item" data-item="pizza" data-price="7.99">
+            <div class="menu-item" data-item="pizza" data-price="350">
                 <div class="item-image">🍕</div>
                 <div class="item-name">Pizza</div>
                 <div class="item-price">₹350</div>
@@ -722,7 +722,7 @@
                 </div>
             </div>
 
-            <div class="menu-item" data-item="donut" data-price="1.49">
+            <div class="menu-item" data-item="donut" data-price="80">
                 <div class="item-image">🍩</div>
                 <div class="item-name">Donut</div>
                 <div class="item-price">₹80</div>
@@ -756,7 +756,7 @@
             <textarea class="comment-input" placeholder="Any special requests, details, final wishes etc." id="order-comment"></textarea>
         </div>
 
-        <button class="pay-button" onclick="showPaymentModal()">PAY $0.00</button>
+        <button class="pay-button" onclick="showPaymentModal()">PAY ₹0.00</button>
 
     <!-- Payment Modal -->
     <div id="payment-modal" class="modal">
@@ -1521,7 +1521,7 @@
                     const price = parseFloat(document.querySelector(`[data-item="${item}"]`).dataset.price);
                     total += price * quantity;
                 }
-                viewOrderButton.textContent = `View Order (${totalItems} items - $${total.toFixed(2)})`;
+                viewOrderButton.textContent = `View Order (${totalItems} items - ₹${total.toFixed(2)})`;
                 viewOrderButton.classList.add('active');
             } else {
                 viewOrderButton.classList.remove('active');
@@ -1564,13 +1564,13 @@
                             </div>
                         </div>
                     </div>
-                    <div class="order-item-price">$${itemTotal.toFixed(2)}</div>
+                    <div class="order-item-price">₹${itemTotal.toFixed(2)}</div>
                 `;
 
                 orderItems.appendChild(itemElement);
             }
 
-            payButton.textContent = `PAY $${total.toFixed(2)}`;
+            payButton.textContent = `PAY ₹${total.toFixed(2)}`;
         }
 
         function showPaymentModal() {
