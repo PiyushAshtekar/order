@@ -1593,6 +1593,11 @@
             document.querySelectorAll('.quantity').forEach(qty => {
                 qty.textContent = '0';
             });
+
+            // Reset all quantity badge displays
+            document.querySelectorAll('.quantity-badge').forEach(badge => {
+                badge.style.display = 'none';
+            });
             
             // Hide all quantity controls and show ADD buttons
             document.querySelectorAll('.quantity-controls').forEach(control => {
@@ -1607,28 +1612,29 @@
             viewOrderBtn.classList.remove('active');
         }
 
-        function processCashPayment() {
-            const token = generateToken();
-            const orderDetails = {
-                token: token,
-                items: Object.entries(cart).map(([item, quantity]) => ({ item, quantity })),
-                comment: document.getElementById('order-comment').value,
-                paymentMethod: 'cash'
-            };
+function processCashPayment() {
+    const counterNumber = generateCounterNumber();
+    const orderDetails = {
+        counterNumber: counterNumber,
+        items: Object.entries(cart).map(([item, quantity]) => ({ item, quantity })),
+        comment: document.getElementById('order-comment').value,
+        paymentMethod: 'cash'
+    };
 
-            document.getElementById('payment-modal').style.display = 'none';
-            document.getElementById('order-details').innerHTML = `
-                <p>Your Token Number: <strong>${token}</strong></p>
-                <p>Please show this token at the counter to collect your order.</p>
-            `;
-            document.getElementById('success-modal').style.display = 'block';
+    // Reset the order after successful payment
+    resetOrder();
 
-            // Send to Telegram bot
-            window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
-            
-            // Reset the order
-            resetOrder();
-        }
+    // Hide payment modal
+    document.getElementById('payment-modal').style.display = 'none';
+    document.getElementById('order-details').innerHTML = `
+        <p>Counter Number: <strong>${counterNumber}</strong></p>
+        <p>Please collect your order from counter ${counterNumber}.</p>
+    `;
+    document.getElementById('success-modal').style.display = 'block';
+
+    // Send to Telegram bot
+    window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
+}
 
         function processOnlinePayment() {
             document.getElementById('payment-modal').style.display = 'none';
@@ -1642,6 +1648,7 @@
                 width: 200,
                 height: 200
             });
+            
         }
 
         function calculateTotal() {
