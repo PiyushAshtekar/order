@@ -1613,35 +1613,27 @@
         }
 
 function processCashPayment() {
+    const counterNumber = generateCounterNumber();
     const orderDetails = {
-        items: Object.entries(cart).flatMap(([item, quantity]) => Array(quantity).fill(item)),
+        counterNumber: counterNumber,
+        items: Object.entries(cart).map(([item, quantity]) => ({ item, quantity })),
         comment: document.getElementById('order-comment').value,
         paymentMethod: 'cash'
     };
 
-    // Send to Telegram bot and wait for response
-    window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
-    window.Telegram.WebApp.MainButton.showProgress();
-
-    // Listen for response from the bot
-    window.Telegram.WebApp.onEvent('message', function(message) {
-        try {
-            const response = JSON.parse(message.data);
-            if (response.type === 'close_webapp') {
-                // Show success message with token number
-                alert(`Order confirmed! Your token number is: ${response.token}\nPlease check your bill in the chat.`);
-                window.Telegram.WebApp.close();
-            }
-        } catch (e) {
-            console.error('Error processing response:', e);
-            alert('Order processed successfully!');
-            window.Telegram.WebApp.close();
-        }
-    });
-
-    // Reset the order
+    // Reset the order after successful payment
     resetOrder();
+
+    // Hide payment modal
     document.getElementById('payment-modal').style.display = 'none';
+    document.getElementById('order-details').innerHTML = `
+        <p>Counter Number: <strong>${counterNumber}</strong></p>
+        <p>Please collect your order from counter ${counterNumber}.</p>
+    `;
+    document.getElementById('success-modal').style.display = 'block';
+
+    // Send to Telegram bot
+    window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
 }
 
         function processOnlinePayment() {
@@ -1669,35 +1661,29 @@ function processCashPayment() {
         }
 
         function confirmOnlinePayment() {
+            const counterNumber = generateCounterNumber();
+            
+            // Reset the order after successful payment
+            resetOrder();
+            
+            // Hide payment modal
+            document.getElementById('online-payment-modal').style.display = 'none';
             const orderDetails = {
-                items: Object.entries(cart).flatMap(([item, quantity]) => Array(quantity).fill(item)),
+                counterNumber: counterNumber,
+                items: Object.entries(cart).map(([item, quantity]) => ({ item, quantity })),
                 comment: document.getElementById('order-comment').value,
                 paymentMethod: 'online'
             };
 
-            // Send to Telegram bot and wait for response
-            window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
-            window.Telegram.WebApp.MainButton.showProgress();
-
-            // Listen for response from the bot
-            window.Telegram.WebApp.onEvent('message', function(message) {
-                try {
-                    const response = JSON.parse(message.data);
-                    if (response.type === 'close_webapp') {
-                        // Show success message with token number
-                        alert(`Order confirmed! Your token number is: ${response.token}\nPlease check your bill in the chat.`);
-                        window.Telegram.WebApp.close();
-                    }
-                } catch (e) {
-                    console.error('Error processing response:', e);
-                    alert('Order processed successfully!');
-                    window.Telegram.WebApp.close();
-                }
-            });
-
-            // Reset the order and hide modals
-            resetOrder();
             document.getElementById('online-payment-modal').style.display = 'none';
+            document.getElementById('order-details').innerHTML = `
+                <p>Counter Number: <strong>${counterNumber}</strong></p>
+                <p>Please collect your order from counter ${counterNumber}.</p>
+            `;
+            document.getElementById('success-modal').style.display = 'block';
+
+            // Send to Telegram bot
+            window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
         }
 
         function closeSuccessModal() {
