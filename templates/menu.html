@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <title>Mini App Menu</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -161,7 +160,7 @@
             background: linear-gradient(45deg, #3498db, #2ecc71);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
         }
 
@@ -180,7 +179,7 @@
             margin: 16px;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .order-item {
@@ -246,7 +245,7 @@
             background: white;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .comment-section-title {
@@ -302,32 +301,24 @@
         }
 
         @keyframes pulseButton {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.02);
-            }
-
-            100% {
-                transform: scale(1);
-            }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
         }
 
         /* Responsive adjustments */
         @media (min-width: 768px) {
             .page {
-                max-width: 600px;
+                max-width:600px;
                 margin: 0 auto;
                 height: 100vh;
             }
-
+            
             .header {
                 max-width: 600px;
                 margin: 0 auto;
             }
-
+            
             .pay-button {
                 max-width: 600px;
                 left: 50%;
@@ -339,25 +330,24 @@
             .order-item {
                 padding: 12px;
             }
-
+            
             .order-item-image {
                 width: 40px;
                 height: 40px;
                 font-size: 28px;
             }
-
+            
             .order-item-name {
                 font-size: 14px;
             }
-
+            
             .order-item-price {
                 font-size: 14px;
                 font-weight: 600;
             }
 
             .menu-grid {
-                grid-template-columns: repeat(2, 1fr);
-                /* Adjust for smaller screens */
+            grid-template-columns: repeat(2, 1fr); /* Adjust for smaller screens */
             }
         }
 
@@ -366,7 +356,7 @@
             .pay-button {
                 padding-bottom: max(16px, env(safe-area-inset-bottom));
             }
-
+            
             .page {
                 padding-bottom: max(80px, calc(80px + env(safe-area-inset-bottom)));
             }
@@ -409,8 +399,7 @@
         .quantity-controls {
             display: flex;
             flex-direction: row;
-            display: none;
-            /* Initially hidden */
+            display: none;  /* Initially hidden */
             justify-content: center;
             gap: 8px;
             align-items: center;
@@ -430,8 +419,7 @@
             font-weight: 600;
             cursor: pointer;
             width: 68px;
-            display: block;
-            /* Initially visible */
+            display: block;  /* Initially visible */
             margin: 0 auto;
             text-align: center;
         }
@@ -552,36 +540,18 @@
 
         /* Essential animations */
         @keyframes slideUp {
-            from {
-                transform: translateY(20px);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         /* Transitions */
-        .page,
-        .menu-item,
-        .item-image,
-        .quantity-btn,
-        .quantity,
-        .view-order-button,
-        .order-item,
-        .pay-button {
+        .page, .menu-item, .item-image, .quantity-btn, .quantity,
+        .view-order-button, .order-item, .pay-button {
             transition: all 0.3s ease;
         }
 
@@ -596,13 +566,8 @@
             box-shadow: 0 6px 8px rgba(0,0,0,0.15);
         } */
 
-        .quantity-btn:hover {
-            background: #d0d0d0;
-        }
-
-        .quantity-btn:active {
-            transform: scale(0.9);
-        }
+        .quantity-btn:hover { background: #d0d0d0; }
+        .quantity-btn:active { transform: scale(0.9); }
 
         .view-order-button.active {
             transform: translateY(0);
@@ -615,76 +580,52 @@
             box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
         }
 
-        .order-item:hover {
-            transform: translateX(4px);
-        }
-
-        .pay-button:active {
-            transform: scale(0.98);
-        }
+        .order-item:hover { transform: translateX(4px); }
+        .pay-button:active { transform: scale(0.98); }
 
         /* Flip in from left */
-        .quantity-controls.flip-in {
-            animation: flipInLeft 0.6s forwards;
-        }
-
+        .quantity-controls.flip-in { animation: flipInLeft 0.6s forwards; }
         @keyframes flipInLeft {
             from {
                 opacity: 0;
                 transform: rotateY(-90deg);
             }
-
             to {
                 opacity: 1;
                 transform: rotateY(0deg);
             }
         }
-
         /* Flip out to right */
-        .quantity-controls.flip-out {
-            animation: flipOutRight 0.6s forwards;
-        }
-
+        .quantity-controls.flip-out { animation: flipOutRight 0.6s forwards; }
         @keyframes flipOutRight {
             from {
                 opacity: 1;
                 transform: rotateY(0deg);
             }
-
             to {
                 opacity: 0;
                 transform: rotateY(90deg);
             }
         }
-
         /* Flip in from right */
-        .add-button.flip-in {
-            animation: flipInRight 0.6s forwards;
-        }
-
+        .add-button.flip-in { animation: flipInRight 0.6s forwards; }
         @keyframes flipInRight {
             from {
                 opacity: 0;
                 transform: rotateY(90deg);
             }
-
             to {
                 opacity: 1;
                 transform: rotateY(0deg);
             }
         }
-
         /* Flip out to left */
-        .add-button.flip-out {
-            animation: flipOutLeft 0.6s forwards;
-        }
-
+        .add-button.flip-out { animation: flipOutLeft 0.6s forwards; }
         @keyframes flipOutLeft {
             from {
                 opacity: 1;
                 transform: rotateY(0deg);
             }
-
             to {
                 opacity: 0;
                 transform: rotateY(-90deg);
@@ -707,20 +648,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             z-index: 2;
         }
-
-        .quantity-badge.flip-in {
-            animation: flipInRight 0.6s forwards;
-        }
-
-        .quantity-badge.flip-out {
-            animation: flipOutLeft 0.6s forwards;
-        }
+        .quantity-badge.flip-in { animation: flipInRight 0.6s forwards; }
+        .quantity-badge.flip-out { animation: flipOutLeft 0.6s forwards; }
     </style>
 </head>
-
 <body>
     <div id="menu-page" class="page active">
         <div class="header">
@@ -739,7 +673,7 @@
                     <button class="quantity-btn-plus" onclick="updateQuantity('burger', 1)">+</button>
                 </div>
             </div>
-
+            
             <div class="menu-item" data-item="fries" data-price="100">
                 <div class="item-image">🍟</div>
                 <div class="item-name">Fries</div>
@@ -800,7 +734,7 @@
                 </div>
             </div>
 
-
+                    
         </div>
 
         <button class="view-order-button" onclick="showOrderPage()">View Order</button>
@@ -819,50 +753,49 @@
 
         <div class="comment-section">
             <div class="comment-section-title">Add comment...</div>
-            <textarea class="comment-input" placeholder="Any special requests, details, final wishes etc."
-                id="order-comment"></textarea>
+            <textarea class="comment-input" placeholder="Any special requests, details, final wishes etc." id="order-comment"></textarea>
         </div>
 
         <button class="pay-button" onclick="showPaymentModal()">PAY ₹0.00</button>
 
-        <!-- Payment Modal -->
-        <div id="payment-modal" class="modal">
-            <div class="modal-content">
-                <h2>Select Payment Method</h2>
-                <div class="payment-options">
-                    <button onclick="processCashPayment()" class="payment-btn cash-btn">
-                        <span class="payment-icon">💵</span>
-                        Cash Payment
-                    </button>
-                    <button onclick="processOnlinePayment()" class="payment-btn online-btn">
-                        <span class="payment-icon">💳</span>
-                        Online Payment
-                    </button>
-                </div>
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="modal">
+        <div class="modal-content">
+            <h2>Select Payment Method</h2>
+            <div class="payment-options">
+                <button onclick="processCashPayment()" class="payment-btn cash-btn">
+                    <span class="payment-icon">💵</span>
+                    Cash Payment
+                </button>
+                <button onclick="processOnlinePayment()" class="payment-btn online-btn">
+                    <span class="payment-icon">💳</span>
+                    Online Payment
+                </button>
             </div>
         </div>
+    </div>
 
-        <!-- Online Payment Modal -->
-        <div id="online-payment-modal" class="modal">
-            <div class="modal-content">
-                <h2>Online Payment</h2>
-                <div class="qr-container">
-                    <div id="qr-code"></div>
-                    <p>UPI ID: merchant@upi</p>
-                </div>
-                <p>Scan QR code or use UPI ID to pay</p>
-                <button onclick="confirmOnlinePayment()" class="confirm-btn">Confirm Payment</button>
+    <!-- Online Payment Modal -->
+    <div id="online-payment-modal" class="modal">
+        <div class="modal-content">
+            <h2>Online Payment</h2>
+            <div class="qr-container">
+                <div id="qr-code"></div>
+                <p>UPI ID: merchant@upi</p>
             </div>
+            <p>Scan QR code or use UPI ID to pay</p>
+            <button onclick="confirmOnlinePayment()" class="confirm-btn">Confirm Payment</button>
         </div>
+    </div>
 
-        <!-- Order Success Modal -->
-        <div id="success-modal" class="modal">
-            <div class="modal-content">
-                <h2>Order Successful! 🎉</h2>
-                <div id="order-details"></div>
-                <button onclick="closeSuccessModal()" class="confirm-btn">Close</button>
-            </div>
+    <!-- Order Success Modal -->
+    <div id="success-modal" class="modal">
+        <div class="modal-content">
+            <h2>Order Successful! 🎉</h2>
+            <div id="order-details"></div>
+            <button onclick="closeSuccessModal()" class="confirm-btn">Close</button>
         </div>
+    </div>
     </div>
 
     <!-- Add this before closing </head> tag -->
@@ -974,7 +907,7 @@
             display: none;
             min-height: auto;
             padding-bottom: env(safe-area-inset-bottom);
-
+            
         }
 
         .page.active {
@@ -1030,7 +963,7 @@
             margin: 16px;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .order-item {
@@ -1096,7 +1029,7 @@
             background: white;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .comment-section-title {
@@ -1150,17 +1083,9 @@
         }
 
         @keyframes pulseButton {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.02);
-            }
-
-            100% {
-                transform: scale(1);
-            }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
         }
 
         /* Responsive adjustments */
@@ -1170,12 +1095,12 @@
                 margin: 0 auto;
                 height: 100vh;
             }
-
+            
             .header {
                 max-width: 600px;
                 margin: 0 auto;
             }
-
+            
             .pay-button {
                 max-width: 600px;
                 transform: translateX(-50%);
@@ -1186,17 +1111,17 @@
             .order-item {
                 padding: 12px;
             }
-
+            
             .order-item-image {
                 width: 40px;
                 height: 40px;
                 font-size: 28px;
             }
-
+            
             .order-item-name {
                 font-size: 14px;
             }
-
+            
             .order-item-price {
                 font-size: 14px;
             }
@@ -1207,7 +1132,7 @@
             .pay-button {
                 padding-bottom: max(20px, env(safe-area-inset-bottom));
             }
-
+            
             .page {
                 padding-bottom: max(80px, calc(80px + env(safe-area-inset-bottom)));
             }
@@ -1248,8 +1173,7 @@
         .quantity-controls {
             display: flex;
             flex-direction: row;
-            display: none;
-            /* Initially hidden */
+            display: none;  /* Initially hidden */
             justify-content: center;
             gap: 8px;
             align-items: center;
@@ -1269,8 +1193,7 @@
             font-weight: 600;
             cursor: pointer;
             width: 68px;
-            display: block;
-            /* Initially visible */
+            display: block;  /* Initially visible */
             margin: 0 auto;
             text-align: center;
         }
@@ -1391,36 +1314,18 @@
 
         /* Essential animations */
         @keyframes slideUp {
-            from {
-                transform: translateY(20px);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         /* Transitions */
-        .page,
-        .menu-item,
-        .item-image,
-        .quantity-btn,
-        .quantity,
-        .view-order-button,
-        .order-item,
-        .pay-button {
+        .page, .menu-item, .item-image, .quantity-btn, .quantity,
+        .view-order-button, .order-item, .pay-button {
             transition: all 0.3s ease;
         }
 
@@ -1435,13 +1340,8 @@
             box-shadow: 0 6px 8px rgba(0,0,0,0.15);
         } */
 
-        .quantity-btn:hover {
-            background: #d0d0d0;
-        }
-
-        .quantity-btn:active {
-            transform: scale(0.9);
-        }
+        .quantity-btn:hover { background: #d0d0d0; }
+        .quantity-btn:active { transform: scale(0.9); }
 
         .view-order-button.active {
             transform: translateY(0);
@@ -1454,76 +1354,52 @@
             box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
         }
 
-        .order-item:hover {
-            transform: translateX(4px);
-        }
-
-        .pay-button:active {
-            transform: scale(0.98);
-        }
+        .order-item:hover { transform: translateX(4px); }
+        .pay-button:active { transform: scale(0.98); }
 
         /* Flip in from left */
-        .quantity-controls.flip-in {
-            animation: flipInLeft 0.6s forwards;
-        }
-
+        .quantity-controls.flip-in { animation: flipInLeft 0.6s forwards; }
         @keyframes flipInLeft {
             from {
                 opacity: 0;
                 transform: rotateY(-90deg);
             }
-
             to {
                 opacity: 1;
                 transform: rotateY(0deg);
             }
         }
-
         /* Flip out to right */
-        .quantity-controls.flip-out {
-            animation: flipOutRight 0.6s forwards;
-        }
-
+        .quantity-controls.flip-out { animation: flipOutRight 0.6s forwards; }
         @keyframes flipOutRight {
             from {
                 opacity: 1;
                 transform: rotateY(0deg);
             }
-
             to {
                 opacity: 0;
                 transform: rotateY(90deg);
             }
         }
-
         /* Flip in from right */
-        .add-button.flip-in {
-            animation: flipInRight 0.6s forwards;
-        }
-
+        .add-button.flip-in { animation: flipInRight 0.6s forwards; }
         @keyframes flipInRight {
             from {
                 opacity: 0;
                 transform: rotateY(90deg);
             }
-
             to {
                 opacity: 1;
                 transform: rotateY(0deg);
             }
         }
-
         /* Flip out to left */
-        .add-button.flip-out {
-            animation: flipOutLeft 0.6s forwards;
-        }
-
+        .add-button.flip-out { animation: flipOutLeft 0.6s forwards; }
         @keyframes flipOutLeft {
             from {
                 opacity: 1;
                 transform: rotateY(0deg);
             }
-
             to {
                 opacity: 0;
                 transform: rotateY(-90deg);
@@ -1546,17 +1422,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             z-index: 2;
         }
-
-        .quantity-badge.flip-in {
-            animation: flipInRight 0.6s forwards;
-        }
-
-        .quantity-badge.flip-out {
-            animation: flipOutLeft 0.6s forwards;
-        }
+        .quantity-badge.flip-in { animation: flipInRight 0.6s forwards; }
+        .quantity-badge.flip-out { animation: flipOutLeft 0.6s forwards; }
     </style>
 
     <!-- Modify the existing script section -->
@@ -1675,7 +1545,7 @@
             let total = 0;
 
             orderItems.innerHTML = '';
-
+            
             for (const [item, quantity] of Object.entries(cart)) {
                 const menuItem = document.querySelector(`[data-item="${item}"]`);
                 const price = parseFloat(menuItem.dataset.price);
@@ -1718,7 +1588,7 @@
         function resetOrder() {
             // Reset cart object
             cart = {};
-
+            
             // Reset all quantity displays
             document.querySelectorAll('.quantity').forEach(qty => {
                 qty.textContent = '0';
@@ -1728,7 +1598,7 @@
             document.querySelectorAll('.quantity-badge').forEach(badge => {
                 badge.style.display = 'none';
             });
-
+            
             // Hide all quantity controls and show ADD buttons
             document.querySelectorAll('.quantity-controls').forEach(control => {
                 control.classList.remove('active');
@@ -1736,44 +1606,49 @@
             document.querySelectorAll('.add-button').forEach(btn => {
                 btn.classList.remove('hidden');
             });
-
+            
             // Reset view order button
             const viewOrderBtn = document.querySelector('.view-order-button');
             viewOrderBtn.classList.remove('active');
         }
 
-        function processCashPayment() {
-            const counterNumber = generateCounterNumber();
-            const orderDetails = {
-                counterNumber: counterNumber,
-                items: Object.entries(cart).map(([item, quantity]) => ({
-                    item: item,
-                    quantity: quantity
-                })),
-                comment: document.getElementById('order-comment').value,
-                paymentMethod: 'cash'
-            };
+function processCashPayment() {
+    const counterNumber = generateCounterNumber();
+    const orderDetails = {
+        counterNumber: counterNumber,
+        items: Object.entries(cart).map(([item, quantity]) => ({ item, quantity })),
+        comment: document.getElementById('order-comment').value,
+        paymentMethod: 'cash'
+    };
 
-            // Close the web app and send data
-            Telegram.WebApp.sendData(JSON.stringify(orderDetails));
-            Telegram.WebApp.close();
-        }
+    // Reset the order after successful payment
+    resetOrder();
 
-        function confirmOnlinePayment() {
-            const counterNumber = generateCounterNumber();
-            const orderDetails = {
-                counterNumber: counterNumber,
-                items: Object.entries(cart).map(([item, quantity]) => ({
-                    item: item,
-                    quantity: quantity
-                })),
-                comment: document.getElementById('order-comment').value,
-                paymentMethod: 'online'
-            };
+    // Hide payment modal
+    document.getElementById('payment-modal').style.display = 'none';
+    document.getElementById('order-details').innerHTML = `
+        <p>Counter Number: <strong>${counterNumber}</strong></p>
+        <p>Please collect your order from counter ${counterNumber}.</p>
+    `;
+    document.getElementById('success-modal').style.display = 'block';
 
-            // Close the web app and send data
-            Telegram.WebApp.sendData(JSON.stringify(orderDetails));
-            Telegram.WebApp.close();
+    // Send to Telegram bot
+    window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
+}
+
+        function processOnlinePayment() {
+            document.getElementById('payment-modal').style.display = 'none';
+            document.getElementById('online-payment-modal').style.display = 'block';
+
+            // Generate QR code
+            const qrContainer = document.getElementById('qr-code');
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: 'upi://pay?pa=merchant@upi&pn=Restaurant&am=' + calculateTotal(),
+                width: 200,
+                height: 200
+            });
+            
         }
 
         function calculateTotal() {
@@ -1787,10 +1662,10 @@
 
         function confirmOnlinePayment() {
             const counterNumber = generateCounterNumber();
-
+            
             // Reset the order after successful payment
             resetOrder();
-
+            
             // Hide payment modal
             document.getElementById('online-payment-modal').style.display = 'none';
             const orderDetails = {
@@ -1819,5 +1694,4 @@
         }
     </script>
 </body>
-
 </html>
