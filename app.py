@@ -2,6 +2,7 @@ import logging
 import os
 import json
 from uuid import uuid4
+from datetime import datetime
 from flask import Flask, render_template, request
 from dotenv import load_dotenv
 from reportlab.pdfgen import canvas
@@ -145,9 +146,12 @@ async def web_app_data_handler(update: Update, context: ContextTypes.DEFAULT_TYP
             item_counts[item] = item_counts.get(item, 0) + 1
             total += MENU_ITEMS[item]['price']
 
-        # Create a detailed order confirmation
+        # Generate order token
         order_id = str(uuid4())[:8].upper()
-        confirmation = f"🎉 Order #{order_id} Confirmed!\n\n"
+        
+        # Create a detailed order confirmation
+        confirmation = f"🎉 Order Successfully Placed!\n\n"
+        confirmation += f"🔢 Order Token: #{order_id}\n\n"
         confirmation += "📋 Order Summary:\n"
         for item, count in item_counts.items():
             item_total = MENU_ITEMS[item]['price'] * count
@@ -158,13 +162,24 @@ async def web_app_data_handler(update: Update, context: ContextTypes.DEFAULT_TYP
         if comment.strip():
             confirmation += f"\n\n💭 Your Comment:\n{comment}"
         
+        # Generate and send PDF bill
+        file_path = generate_invoice_pdf(chat_id, user_carts[chat_id], order_id, comment)
+        await context.bot.send_document(
+            chat_id=chat_id,
+            document=open(file_path, 'rb'),
+            filename=f"invoice_{order_id}.pdf",
+            caption="📄 Here's your order invoice!"
+        )
+        os.remove(file_path)
+        
+        # Send confirmation message
         await update.message.reply_text(confirmation)
     except Exception as e:
         print("❌ Error in web_app_data_handler:", e)
         await update.message.reply_text("⚠️ Something went wrong adding your items.")
 
 
-def generate_invoice_pdf(chat_id, cart):
+def generate_invoice_pdf(chat_id, cart, order_id, comment=''):
     # Create a temporary directory if it doesn't exist
     temp_dir = os.path.join(os.path.dirname(__file__), 'temp')
     os.makedirs(temp_dir, exist_ok=True)
@@ -173,17 +188,62 @@ def generate_invoice_pdf(chat_id, cart):
     file_path = os.path.join(temp_dir, filename)
 
     c = canvas.Canvas(file_path, pagesize=letter)
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(50, 750, "Order Invoice")
+    
     c.setFont("Helvetica", 12)
-    c.drawString(50, 750, "Invoice")
-    c.drawString(50, 735, f"User ID: {chat_id}")
-    y = 700
+    c.drawString(50, 720, f"Order ID: #{order_id}")
+    c.drawString(50, 700, f"User ID: {chat_id}")
+    c.drawString(50, 680, f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    
+    # Draw header line
+    c.line(50, 660, 550, 660)
+    
+    y = 630
     total = 0
+    item_counts = {}
+    
+    # Count items
     for item_key in cart:
+        item_counts[item_key] = item_counts.get(item_key, 0) + 1
+    
+    # Draw items
+    c.drawString(50, y, "Item")
+    c.drawString(300, y, "Quantity")
+    c.drawString(400, y, "Price")
+    c.drawString(500, y, "Total")
+    y -= 30
+    
+    for item_key, count in item_counts.items():
         item = MENU_ITEMS[item_key]
-        c.drawString(50, y, f"{item['name']} - ${item['price']}")
+        item_total = item['price'] * count
+        total += item_total
+        
+        c.drawString(50, y, item['name'])
+        c.drawString(300, y, str(count))
+        c.drawString(400, y, f"${item['price']}")
+        c.drawString(500, y, f"${item_total:.2f}")
         y -= 20
-        total += item['price']
-    c.drawString(50, y - 20, f"Total: ${total}")
+    
+    # Draw total line
+    y -= 20
+    c.line(50, y, 550, y)
+    y -= 20
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(400, y, "Total:")
+    c.drawString(500, y, f"${total:.2f}")
+    
+    # Add comment if present
+    if comment.strip():
+        y -= 40
+        c.setFont("Helvetica", 12)
+        c.drawString(50, y, "Customer Comment:")
+        y -= 20
+        # Wrap comment text
+        for line in comment.split('\n'):
+            c.drawString(50, y, line)
+            y -= 15
+    
     c.save()
     return file_path
 
