@@ -57,9 +57,15 @@ def menu():
 
 @flask_app.route('/webhook', methods=['POST'])
 async def webhook():
-    update = Update.de_json(request.get_json(), app.bot)
-    await app.process_update(update)
-    return 'OK'
+    try:
+        data = request.get_json()
+        logging.info(f"📥 Received webhook data: {data}")
+        update = Update.de_json(data, app.bot)
+        await app.process_update(update)
+        return 'OK'
+    except Exception as e:
+        logging.error(f"❌ Error processing webhook: {str(e)}")
+        return 'Error', 500
 
 # Handlers
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -274,9 +280,13 @@ def generate_invoice_pdf(chat_id, cart, order_id, comment=''):
 
 def set_webhook():
     import asyncio
-    webhook_url = f"https://api.telegram.org/bot{BOT_TOKEN}/setWebhook?url=https://order-rhgz.onrender.com/webhook"
-    asyncio.run(app.bot.set_webhook(url=webhook_url))
-    logging.info(f"Webhook set to {webhook_url}")
+    try:
+        webhook_url = "https://order-rhgz.onrender.com/webhook"
+        asyncio.run(app.bot.set_webhook(url=webhook_url))
+        logging.info(f"✅ Webhook successfully set to {webhook_url}")
+    except Exception as e:
+        logging.error(f"❌ Failed to set webhook: {str(e)}")
+        raise
 
 def main():
     if not BOT_TOKEN:
@@ -291,6 +301,10 @@ def main():
 
 if __name__ == '__main__':
     app.add_handler(CommandHandler("start", start))
-    # app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, web_app_data_handler))
-    app.run_polling()
+    
+    # Set up webhook
+    set_webhook()
+    
+    # Run Flask app
+    flask_app.run(host='0.0.0.0', port=PORT)
