@@ -145,9 +145,13 @@ async def web_app_data_handler(update: Update, context: ContextTypes.DEFAULT_TYP
             item_counts[item] = item_counts.get(item, 0) + 1
             total += MENU_ITEMS[item]['price']
 
-        # Create a detailed order confirmation
+        # Generate token number and order ID
+        token_number = str(uuid4())[:6].upper()
         order_id = str(uuid4())[:8].upper()
-        confirmation = f"🎉 Order #{order_id} Confirmed!\n\n"
+        
+        # Create a detailed order confirmation
+        confirmation = f"🎉 Order #{order_id} Confirmed!\n"
+        confirmation += f"🎫 Your Token Number: {token_number}\n\n"
         confirmation += "📋 Order Summary:\n"
         for item, count in item_counts.items():
             item_total = MENU_ITEMS[item]['price'] * count
@@ -158,32 +162,95 @@ async def web_app_data_handler(update: Update, context: ContextTypes.DEFAULT_TYP
         if comment.strip():
             confirmation += f"\n\n💭 Your Comment:\n{comment}"
         
+        # Generate PDF bill
+        file_path = generate_invoice_pdf(chat_id, user_carts[chat_id], token_number, order_id)
+        
+        # Send confirmation message and PDF
         await update.message.reply_text(confirmation)
+        await context.bot.send_document(
+            chat_id=chat_id,
+            document=open(file_path, 'rb'),
+            filename=f"bill_{order_id}.pdf",
+            caption=f"🧾 Here's your bill for Order #{order_id}"
+        )
+        
+        # Clean up PDF file
+        os.remove(file_path)
+        
+        # Send close_webapp instruction
+        response_data = {
+            "type": "close_webapp",
+            "token": token_number
+        }
+        await update.message.reply_text(
+            text="Order processed successfully!",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("Close", callback_data=json.dumps(response_data))]
+            ])
+        )
     except Exception as e:
         print("❌ Error in web_app_data_handler:", e)
         await update.message.reply_text("⚠️ Something went wrong adding your items.")
 
 
-def generate_invoice_pdf(chat_id, cart):
+def generate_invoice_pdf(chat_id, cart, token_number, order_id):
     # Create a temporary directory if it doesn't exist
     temp_dir = os.path.join(os.path.dirname(__file__), 'temp')
     os.makedirs(temp_dir, exist_ok=True)
     
-    filename = f"invoice_{chat_id}_{uuid4().hex}.pdf"
+    filename = f"bill_{order_id}.pdf"
     file_path = os.path.join(temp_dir, filename)
 
     c = canvas.Canvas(file_path, pagesize=letter)
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(50, 750, "Order Bill")
+    
     c.setFont("Helvetica", 12)
-    c.drawString(50, 750, "Invoice")
-    c.drawString(50, 735, f"User ID: {chat_id}")
-    y = 700
+    c.drawString(50, 720, f"Order #: {order_id}")
+    c.drawString(50, 700, f"Token Number: {token_number}")
+    c.drawString(50, 680, f"User ID: {chat_id}")
+    
+    # Draw line separator
+    c.line(50, 670, 550, 670)
+    
+    # Items header
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(50, 650, "Item")
+    c.drawString(350, 650, "Quantity")
+    c.drawString(450, 650, "Price")
+    
+    y = 620
     total = 0
+    item_counts = {}
+    
+    # Count items
     for item_key in cart:
+        item_counts[item_key] = item_counts.get(item_key, 0) + 1
+    
+    # Draw items
+    c.setFont("Helvetica", 12)
+    for item_key, count in item_counts.items():
         item = MENU_ITEMS[item_key]
-        c.drawString(50, y, f"{item['name']} - ${item['price']}")
+        item_total = item['price'] * count
+        c.drawString(50, y, item['name'])
+        c.drawString(350, y, str(count))
+        c.drawString(450, y, f"${item_total:.2f}")
         y -= 20
-        total += item['price']
-    c.drawString(50, y - 20, f"Total: ${total}")
+        total += item_total
+    
+    # Draw line separator
+    c.line(50, y - 10, 550, y - 10)
+    
+    # Draw total
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(350, y - 30, "Total:")
+    c.drawString(450, y - 30, f"${total:.2f}")
+    
+    # Footer
+    c.setFont("Helvetica", 10)
+    c.drawString(50, 50, "Thank you for your order!")
+    c.drawString(50, 35, "Please keep this bill for reference.")
+    
     c.save()
     return file_path
 
