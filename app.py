@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import Flask
+from flask import Flask, render_template
 from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import (
@@ -23,6 +23,10 @@ user_carts = {}
 @flask_app.route('/')
 def index():
     return "🤖 Bot is running!"
+
+@flask_app.route('/menu')
+def menu():
+    return render_template('menu.html')
 
 # Telegram bot setup
 app = ApplicationBuilder().token(BOT_TOKEN).build()
