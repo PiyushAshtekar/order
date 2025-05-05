@@ -63,6 +63,7 @@ async def handle_webhook(request):
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     try:
         update = Update.de_json(await request.get_data().decode("utf-8"), app.bot)
+        logging.info(f"Received update: {update}")  # Log the entire update
         await app.process_update(update)
     except Exception as e:
         logging.error(f"Error processing webhook: {e}")
@@ -73,12 +74,17 @@ async def telegram_webhook():
     return await handle_webhook(request)
 
 async def post_init(app: ApplicationBuilder):
-    await app.bot.set_webhook(f"{WEBHOOK_URL}/telegram-webhook")
+    logging.info("Running post_init to set webhook...")
+    try:
+        await app.bot.set_webhook(f"{WEBHOOK_URL}/telegram-webhook")
+        logging.info(f"Webhook set to: {WEBHOOK_URL}/telegram-webhook")
+    except Exception as e:
+        logging.error(f"Error setting webhook: {e}")
 
 def main():
     logging.basicConfig(level=logging.INFO)
-
     app = ApplicationBuilder().token(BOT_TOKEN).post_init(post_init).build()
+    logging.info(f"Application object: {app}") # Log the application object
 
     # Add handlers
     app.add_handler(CommandHandler("start", start))
@@ -88,4 +94,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    flask_app.run(host="0.0.0.0")  # Removed the port argument
+    flask_app.run(host="0.0.0.0")
