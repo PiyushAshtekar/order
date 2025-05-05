@@ -15,7 +15,6 @@ from telegram.constants import ParseMode
 # Load environment variables
 load_dotenv()
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-PORT = int(os.getenv("PORT", 5000))
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # Ensure this is set in Render's environment
 
 # Flask app
@@ -89,4 +88,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    flask_app.run(host="0.0.0.0", port=PORT)
+    flask_app.run(host="0.0.0.0")  # Removed the port argument
