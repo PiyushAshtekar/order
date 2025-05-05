@@ -302,6 +302,8 @@ def main():
 if __name__ == '__main__':
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, web_app_data_handler))
+    app.add_handler(CallbackQueryHandler(button_handler))
+    app.run_polling()
     
     # Set up webhook
     set_webhook()
