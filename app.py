@@ -1,29 +1,15 @@
-import logging
 import os
-import json
-from uuid import uuid4
-from datetime import datetime
-from flask import Flask, render_template, request
+import logging
+from flask import Flask
 from dotenv import load_dotenv
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
-
-from telegram import (
-    Update,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    WebAppInfo,
-)
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import (
     ApplicationBuilder,
     CommandHandler,
-    CallbackQueryHandler,
-    MessageHandler,
-    ContextTypes,
-    filters,
+    ContextTypes
 )
 
-# Load .env
+# Load environment variables
 load_dotenv()
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 PORT = int(os.getenv("PORT", 5000))
@@ -34,40 +20,13 @@ flask_app = Flask(__name__)
 # Global cart (in-memory)
 user_carts = {}
 
-# Menu
-MENU_ITEMS = {
-    "burger": {"name": "🍔 Burger", "price": 4.99},
-    "fries": {"name": "🍟 Fries", "price": 1.49},
-    "hotdog": {"name": "🌭 Hotdog", "price": 3.49},
-    "taco": {"name": "🌮 Taco", "price": 3.99},
-    "pizza": {"name": "🍕 Pizza", "price": 7.99},
-    "donut": {"name": "🍩 Donut", "price": 1.49},
-}
-
-# Telegram bot application
-app = ApplicationBuilder().token(BOT_TOKEN).build()
-
 @flask_app.route('/')
 def index():
-    return 'Bot is running!'
+    return "🤖 Bot is running!"
 
-@flask_app.route('/menu')
-def menu():
-    return render_template('menu.html')
+# Telegram bot setup
+app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-@flask_app.route('/webhook', methods=['POST'])
-async def webhook():
-    try:
-        data = request.get_json()
-        logging.info(f"📥 Received webhook data: {data}")
-        update = Update.de_json(data, app.bot)
-        await app.process_update(update)
-        return 'OK'
-    except Exception as e:
-        logging.error(f"❌ Error processing webhook: {str(e)}")
-        return 'Error', 500
-
-# Handlers
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     user_carts[chat_id] = []
@@ -93,224 +52,17 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text("Please tap the button below to order your perfect lunch! 🍽️", reply_markup=reply_markup)
 
-async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    chat_id = query.message.chat.id
-
-    if query.data == 'view_cart':
-        cart = user_carts.get(chat_id, [])
-        if not cart:
-            await query.edit_message_text("🛒 Your cart is empty.")
-            return
-
-        cart_text = "\n".join([f"- {MENU_ITEMS[item]['name']} - ${MENU_ITEMS[item]['price']}" for item in cart])
-        total = sum([MENU_ITEMS[item]['price'] for item in cart])
-        cart_text += f"\n\nTotal: ${total}"
-        keyboard = [[InlineKeyboardButton("✅ Checkout", callback_data='checkout')]]
-        await query.edit_message_text(cart_text, reply_markup=InlineKeyboardMarkup(keyboard))
-
-    elif query.data == 'checkout':
-        cart = user_carts.get(chat_id, [])
-        if not cart:
-            await query.edit_message_text("Cart is empty.")
-            return
-
-        file_path = generate_invoice_pdf(chat_id, cart, str(uuid4())[:8].upper()) # Generate order ID here
-        await context.bot.send_document(chat_id=chat_id, document=open(file_path, 'rb'), filename="invoice.pdf")
-        os.remove(file_path)
-        user_carts[chat_id] = []
-        await query.edit_message_text("✅ Order confirmed! Invoice sent.")
-
-    elif query.data in MENU_ITEMS:
-        user_carts.setdefault(chat_id, []).append(query.data)
-        await context.bot.send_message(chat_id=chat_id, text=f"{MENU_ITEMS[query.data]['name']} added to cart!")
-
-async def web_app_data_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logging.info("📥 Received web_app_data: %s", update.message.web_app_data.data)
-
-    try:
-        data = json.loads(update.message.web_app_data.data)
-        items = data.get('items', [])
-        comment = data.get('comment', '')
-
-        if not items:
-            logging.warning("Empty cart received")
-            await update.message.reply_text("❌ Cart is empty.")
-            return
-
-        chat_id = update.effective_chat.id
-        logging.info("Processing order for chat_id: %s", chat_id)
-        user_carts[chat_id] = []
-
-        item_counts = {}
-        total = 0
-        for order_item in items:  # Iterate over order_items from Web App
-            item_key = order_item.get('item') # Get the item key
-            quantity = order_item.get('quantity', 1)  # Get quantity, default to 1
-
-            if item_key not in MENU_ITEMS:
-                logging.error("Invalid item received: %s", item_key)
-                await update.message.reply_text(f"❌ Invalid item: {item_key}")
-                continue
-
-            user_carts[chat_id].extend([item_key] * quantity) # Add item multiple times
-            item_counts[item_key] = item_counts.get(item_key, 0) + quantity
-            total += MENU_ITEMS[item_key]['price'] * quantity
-
-        # Generate order token
-        order_id = str(uuid4())[:8].upper()
-        logging.info("Generated order ID: %s", order_id)
-
-        # Create a detailed order confirmation
-        confirmation = f"🎉 Order Successfully Placed!\n\n"
-        confirmation += f"🔢 Order Token: #{order_id}\n\n"
-        confirmation += "📋 Order Summary:\n"
-        for item, count in item_counts.items():
-            item_total = MENU_ITEMS[item]['price'] * count
-            confirmation += f"• {count}× {MENU_ITEMS[item]['name']} = ${item_total:.2f}\n"
-
-        confirmation += f"\n💰 Total: ${total:.2f}"
-
-        if comment.strip():
-            confirmation += f"\n\n💭 Your Comment:\n{comment}"
-
-        logging.info("Generating invoice PDF for order: %s", order_id)
-        # Generate and send PDF bill
-        try:
-            file_path = generate_invoice_pdf(chat_id, user_carts[chat_id], order_id, comment)
-            await context.bot.send_document(
-                chat_id=chat_id,
-                document=open(file_path, 'rb'),
-                filename=f"invoice_{order_id}.pdf",
-                caption="📄 Here's your order invoice!"
-            )
-            logging.info("Invoice PDF sent successfully for order: %s", order_id)
-            os.remove(file_path)
-        except Exception as pdf_error:
-            logging.error("Failed to generate or send PDF: %s", pdf_error)
-            await update.message.reply_text("⚠️ Failed to generate invoice, but your order is confirmed.")
-
-        # Send confirmation message
-        try:
-            await update.message.reply_text(confirmation)
-            logging.info("Order confirmation sent successfully for order: %s", order_id)
-        except Exception as msg_error:
-            logging.error("Failed to send confirmation message: %s", msg_error)
-            # Try sending through bot directly as fallback
-            try:
-                await context.bot.send_message(chat_id=chat_id, text=confirmation)
-                logging.info("Order confirmation sent through fallback for order: %s", order_id)
-            except Exception as fallback_error:
-                logging.error("Failed to send confirmation even through fallback: %s", fallback_error)
-                raise
-
-    except Exception as e:
-        logging.error("❌ Error in web_app_data_handler: %s", str(e))
-        try:
-            await update.message.reply_text("⚠️ Something went wrong processing your order. Please try again.")
-        except Exception as notify_error:
-            logging.error("Failed to send error notification: %s", notify_error)
-
-
-def generate_invoice_pdf(chat_id, cart, order_id, comment=''):
-    # Create a temporary directory if it doesn't exist
-    temp_dir = os.path.join(os.path.dirname(__file__), 'temp')
-    os.makedirs(temp_dir, exist_ok=True)
-    
-    filename = f"invoice_{chat_id}_{uuid4().hex}.pdf"
-    file_path = os.path.join(temp_dir, filename)
-
-    c = canvas.Canvas(file_path, pagesize=letter)
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(50, 750, "Order Invoice")
-    
-    c.setFont("Helvetica", 12)
-    c.drawString(50, 720, f"Order ID: #{order_id}")
-    c.drawString(50, 700, f"User ID: {chat_id}")
-    c.drawString(50, 680, f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    
-    # Draw header line
-    c.line(50, 660, 550, 660)
-    
-    y = 630
-    total = 0
-    item_counts = {}
-    
-    # Count items
-    for item_key in cart:
-        item_counts[item_key] = item_counts.get(item_key, 0) + 1
-    
-    # Draw items
-    c.drawString(50, y, "Item")
-    c.drawString(300, y, "Quantity")
-    c.drawString(400, y, "Price")
-    c.drawString(500, y, "Total")
-    y -= 30
-    
-    for item_key, count in item_counts.items():
-        item = MENU_ITEMS[item_key]
-        item_total = item['price'] * count
-        total += item_total
-        
-        c.drawString(50, y, item['name'])
-        c.drawString(300, y, str(count))
-        c.drawString(400, y, f"${item['price']}")
-        c.drawString(500, y, f"${item_total:.2f}")
-        y -= 20
-    
-    # Draw total line
-    y -= 20
-    c.line(50, y, 550, y)
-    y -= 20
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(400, y, "Total:")
-    c.drawString(500, y, f"${total:.2f}")
-    
-    # Add comment if present
-    if comment.strip():
-        y -= 40
-        c.setFont("Helvetica", 12)
-        c.drawString(50, y, "Customer Comment:")
-        y -= 20
-        # Wrap comment text
-        for line in comment.split('\n'):
-            c.drawString(50, y, line)
-            y -= 15
-    
-    c.save()
-    return file_path
-
-def set_webhook():
-    import asyncio
-    try:
-        webhook_url = "https://order-rhgz.onrender.com/webhook"
-        asyncio.run(app.bot.set_webhook(url=webhook_url))
-        logging.info(f"✅ Webhook successfully set to {webhook_url}")
-    except Exception as e:
-        logging.error(f"❌ Failed to set webhook: {str(e)}")
-        raise
 
 def main():
-    if not BOT_TOKEN:
-        logging.error("BOT TOKEN is missing.")
-        return
-
-    # Configure logging
-    logging.basicConfig(
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        level=logging.INFO
-    )
-
-if __name__ == '__main__':
-    main() # Call main first
+    # Logging
+    logging.basicConfig(level=logging.INFO)
+    
+    # Add start handler
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, web_app_data_handler))
-    app.add_handler(CallbackQueryHandler(button_handler))
+
+    # Start polling
     app.run_polling()
 
-    # Set up webhook
-    set_webhook()
-    
-    # Run Flask app
-    flask_app.run(host='0.0.0.0', port=PORT)
+if __name__ == "__main__":
+    main()
+    flask_app.run(host="0.0.0.0", port=PORT)
