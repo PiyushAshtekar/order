@@ -1,23 +1,27 @@
 import os
 import logging
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import (
     ApplicationBuilder,
     CommandHandler,
-    ContextTypes
+    ContextTypes,
+    MessageHandler,
+    filters,
 )
+from telegram.constants import ParseMode
 
 # Load environment variables
 load_dotenv()
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 PORT = int(os.getenv("PORT", 5000))
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # Ensure this is set in Render's environment
 
 # Flask app
 flask_app = Flask(__name__)
 
-# Global cart (in-memory)
+# Global cart (in-memory) - Consider persistent storage for real applications
 user_carts = {}
 
 @flask_app.route('/')
@@ -28,15 +32,14 @@ def index():
 def menu():
     return render_template('menu.html')
 
-# Telegram bot setup
-app = ApplicationBuilder().token(BOT_TOKEN).build()
-
+# --- Telegram Bot Logic ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     user_carts[chat_id] = []
 
     # Send burger image
     try:
+        # Assuming 'static/burger.png' is in the same directory or accessible
         with open('static/burger.png', 'rb') as photo:
             await context.bot.send_photo(
                 chat_id=chat_id,
@@ -51,21 +54,38 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
     keyboard = [
-        [InlineKeyboardButton("🛒 Order Food", web_app=WebAppInfo(url="https://order-rhgz.onrender.com/menu"))]
+        [InlineKeyboardButton("🛒 Order Food", web_app=WebAppInfo(url=f"{WEBHOOK_URL}/menu"))]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text("Please tap the button below to order your perfect lunch! 🍽️", reply_markup=reply_markup)
 
+# --- Webhook Handling ---
+async def handle_webhook(request):
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    try:
+        update = Update.de_json(await request.get_data().decode("utf-8"), app.bot)
+        await app.process_update(update)
+    except Exception as e:
+        logging.error(f"Error processing webhook: {e}")
+    return "OK"
+
+@flask_app.route('/telegram-webhook', methods=['POST'])
+async def telegram_webhook():
+    return await handle_webhook(request)
+
+async def post_init(app: ApplicationBuilder):
+    await app.bot.set_webhook(f"{WEBHOOK_URL}/telegram-webhook")
 
 def main():
-    # Logging
     logging.basicConfig(level=logging.INFO)
-    
-    # Add start handler
-    app.add_handler(CommandHandler("start", start))
 
-    # Start polling
-    app.run_polling()
+    app = ApplicationBuilder().token(BOT_TOKEN).post_init(post_init).build()
+
+    # Add handlers
+    app.add_handler(CommandHandler("start", start))
+    # You can add other handlers here for different bot commands
+
+    # Note: We are not running app.run_polling() here. Flask will handle the incoming webhook.
 
 if __name__ == "__main__":
     main()
