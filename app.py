@@ -121,7 +121,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(chat_id=chat_id, text=f"{MENU_ITEMS[query.data]['name']} added to cart!")
 
 async def web_app_data_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print("📥 Received web_app_data:", update.message.web_app_data.data)
+    logging.info("📥 Received web_app_data: %s", update.message.web_app_data.data)
 
     try:
         data = json.loads(update.message.web_app_data.data)
@@ -129,16 +129,19 @@ async def web_app_data_handler(update: Update, context: ContextTypes.DEFAULT_TYP
         comment = data.get('comment', '')
 
         if not items:
+            logging.warning("Empty cart received")
             await update.message.reply_text("❌ Cart is empty.")
             return
 
         chat_id = update.effective_chat.id
+        logging.info("Processing order for chat_id: %s", chat_id)
         user_carts[chat_id] = []
         
         item_counts = {}
         total = 0
         for item in items:
             if item not in MENU_ITEMS:
+                logging.error("Invalid item received: %s", item)
                 await update.message.reply_text(f"❌ Invalid item: {item}")
                 continue
                 
@@ -148,6 +151,7 @@ async def web_app_data_handler(update: Update, context: ContextTypes.DEFAULT_TYP
 
         # Generate order token
         order_id = str(uuid4())[:8].upper()
+        logging.info("Generated order ID: %s", order_id)
         
         # Create a detailed order confirmation
         confirmation = f"🎉 Order Successfully Placed!\n\n"
@@ -162,21 +166,42 @@ async def web_app_data_handler(update: Update, context: ContextTypes.DEFAULT_TYP
         if comment.strip():
             confirmation += f"\n\n💭 Your Comment:\n{comment}"
         
+        logging.info("Generating invoice PDF for order: %s", order_id)
         # Generate and send PDF bill
-        file_path = generate_invoice_pdf(chat_id, user_carts[chat_id], order_id, comment)
-        await context.bot.send_document(
-            chat_id=chat_id,
-            document=open(file_path, 'rb'),
-            filename=f"invoice_{order_id}.pdf",
-            caption="📄 Here's your order invoice!"
-        )
-        os.remove(file_path)
+        try:
+            file_path = generate_invoice_pdf(chat_id, user_carts[chat_id], order_id, comment)
+            await context.bot.send_document(
+                chat_id=chat_id,
+                document=open(file_path, 'rb'),
+                filename=f"invoice_{order_id}.pdf",
+                caption="📄 Here's your order invoice!"
+            )
+            logging.info("Invoice PDF sent successfully for order: %s", order_id)
+            os.remove(file_path)
+        except Exception as pdf_error:
+            logging.error("Failed to generate or send PDF: %s", pdf_error)
+            await update.message.reply_text("⚠️ Failed to generate invoice, but your order is confirmed.")
         
         # Send confirmation message
-        await update.message.reply_text(confirmation)
+        try:
+            await update.message.reply_text(confirmation)
+            logging.info("Order confirmation sent successfully for order: %s", order_id)
+        except Exception as msg_error:
+            logging.error("Failed to send confirmation message: %s", msg_error)
+            # Try sending through bot directly as fallback
+            try:
+                await context.bot.send_message(chat_id=chat_id, text=confirmation)
+                logging.info("Order confirmation sent through fallback for order: %s", order_id)
+            except Exception as fallback_error:
+                logging.error("Failed to send confirmation even through fallback: %s", fallback_error)
+                raise
+
     except Exception as e:
-        print("❌ Error in web_app_data_handler:", e)
-        await update.message.reply_text("⚠️ Something went wrong adding your items.")
+        logging.error("❌ Error in web_app_data_handler: %s", str(e))
+        try:
+            await update.message.reply_text("⚠️ Something went wrong processing your order. Please try again.")
+        except Exception as notify_error:
+            logging.error("Failed to send error notification: %s", notify_error)
 
 
 def generate_invoice_pdf(chat_id, cart, order_id, comment=''):
@@ -266,6 +291,6 @@ def main():
 
 if __name__ == '__main__':
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CallbackQueryHandler(button_handler))
+    # app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, web_app_data_handler))
     app.run_polling()
