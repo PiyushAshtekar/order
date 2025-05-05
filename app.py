@@ -116,7 +116,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.edit_message_text("Cart is empty.")
             return
 
-        file_path = generate_invoice_pdf(chat_id, cart)
+        file_path = generate_invoice_pdf(chat_id, cart, str(uuid4())[:8].upper()) # Generate order ID here
         await context.bot.send_document(chat_id=chat_id, document=open(file_path, 'rb'), filename="invoice.pdf")
         os.remove(file_path)
         user_carts[chat_id] = []
@@ -142,23 +142,26 @@ async def web_app_data_handler(update: Update, context: ContextTypes.DEFAULT_TYP
         chat_id = update.effective_chat.id
         logging.info("Processing order for chat_id: %s", chat_id)
         user_carts[chat_id] = []
-        
+
         item_counts = {}
         total = 0
-        for item in items:
-            if item not in MENU_ITEMS:
-                logging.error("Invalid item received: %s", item)
-                await update.message.reply_text(f"❌ Invalid item: {item}")
+        for order_item in items:  # Iterate over order_items from Web App
+            item_key = order_item.get('item') # Get the item key
+            quantity = order_item.get('quantity', 1)  # Get quantity, default to 1
+
+            if item_key not in MENU_ITEMS:
+                logging.error("Invalid item received: %s", item_key)
+                await update.message.reply_text(f"❌ Invalid item: {item_key}")
                 continue
-                
-            user_carts[chat_id].append(item)
-            item_counts[item] = item_counts.get(item, 0) + 1
-            total += MENU_ITEMS[item]['price']
+
+            user_carts[chat_id].extend([item_key] * quantity) # Add item multiple times
+            item_counts[item_key] = item_counts.get(item_key, 0) + quantity
+            total += MENU_ITEMS[item_key]['price'] * quantity
 
         # Generate order token
         order_id = str(uuid4())[:8].upper()
         logging.info("Generated order ID: %s", order_id)
-        
+
         # Create a detailed order confirmation
         confirmation = f"🎉 Order Successfully Placed!\n\n"
         confirmation += f"🔢 Order Token: #{order_id}\n\n"
@@ -166,12 +169,12 @@ async def web_app_data_handler(update: Update, context: ContextTypes.DEFAULT_TYP
         for item, count in item_counts.items():
             item_total = MENU_ITEMS[item]['price'] * count
             confirmation += f"• {count}× {MENU_ITEMS[item]['name']} = ${item_total:.2f}\n"
-        
+
         confirmation += f"\n💰 Total: ${total:.2f}"
-        
+
         if comment.strip():
             confirmation += f"\n\n💭 Your Comment:\n{comment}"
-        
+
         logging.info("Generating invoice PDF for order: %s", order_id)
         # Generate and send PDF bill
         try:
@@ -187,7 +190,7 @@ async def web_app_data_handler(update: Update, context: ContextTypes.DEFAULT_TYP
         except Exception as pdf_error:
             logging.error("Failed to generate or send PDF: %s", pdf_error)
             await update.message.reply_text("⚠️ Failed to generate invoice, but your order is confirmed.")
-        
+
         # Send confirmation message
         try:
             await update.message.reply_text(confirmation)
@@ -300,11 +303,12 @@ def main():
     )
 
 if __name__ == '__main__':
+    main() # Call main first
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, web_app_data_handler))
     app.add_handler(CallbackQueryHandler(button_handler))
     app.run_polling()
-    
+
     # Set up webhook
     set_webhook()
     
