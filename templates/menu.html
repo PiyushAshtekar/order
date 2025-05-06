@@ -1615,8 +1615,15 @@
 function processCashPayment() {
     const counterNumber = generateCounterNumber();
     const orderDetails = {
-        counterNumber: counterNumber,
-        items: Object.entries(cart).map(([item, quantity]) => ({ item, quantity })),
+        counter: counterNumber,
+        items: Object.entries(cart).map(([item, quantity]) => {
+            const menuItem = document.querySelector(`[data-item="${item}"]`);
+            return {
+                name: menuItem.querySelector('.item-name').textContent.trim(),
+                price: menuItem.dataset.price,
+                quantity: quantity
+            };
+        }),
         comment: document.getElementById('order-comment').value,
         paymentMethod: 'cash'
     };
@@ -1669,8 +1676,15 @@ function processCashPayment() {
             // Hide payment modal
             document.getElementById('online-payment-modal').style.display = 'none';
             const orderDetails = {
-                counterNumber: counterNumber,
-                items: Object.entries(cart).map(([item, quantity]) => ({ item, quantity })),
+                counter: counterNumber,
+                items: Object.entries(cart).map(([item, quantity]) => {
+                    const menuItem = document.querySelector(`[data-item="${item}"]`);
+                    return {
+                        name: menuItem.querySelector('.item-name').textContent.trim(),
+                        price: menuItem.dataset.price,
+                        quantity: quantity
+                    };
+                }),
                 comment: document.getElementById('order-comment').value,
                 paymentMethod: 'online'
             };
