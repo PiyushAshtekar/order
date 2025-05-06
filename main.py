@@ -180,38 +180,83 @@ async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Handle web app data
 async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
-        data = json.loads(update.message.web_app_data.data)
-        logger.info(f"Received order data: {data}")
-        
+        # Verify we have web_app_data
+        if not update.message or not update.message.web_app_data:
+            logger.error("No web_app_data received")
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="Sorry, no order data was received. Please try again."
+            )
+            return
+
+        # Parse the order data
+        try:
+            data = json.loads(update.message.web_app_data.data)
+            if not data or 'items' not in data:
+                raise ValueError("Invalid order data format")
+            logger.info(f"Received order data: {data}")
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse order data: {e}")
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="Sorry, there was an error with your order data. Please try again."
+            )
+            return
+        except ValueError as e:
+            logger.error(f"Invalid order data: {e}")
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="Sorry, your order appears to be empty or invalid. Please try again."
+            )
+            return
+
         # Generate order token
         token = generate_token()
         
-        # Generate PDF
-        pdf_path = generate_order_pdf(data, token)
-        
-        # Send confirmation message with PDF
-        await context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text=f"🎉 Thank you for your order!\n\n🔖 Your order token: {token}\n\n📍 Please collect your order from counter {data.get('counter', 1)}\n\nHere's your order confirmation:"
-        )
-        
-        # Send PDF file
-        with open(pdf_path, 'rb') as pdf:
-            await context.bot.send_document(
+        try:
+            # Generate PDF
+            pdf_path = generate_order_pdf(data, token)
+            
+            # Prepare order summary
+            items_summary = "\n".join([f"• {item['quantity']}x {item['name']}" for item in data['items']])
+            total = sum(float(item['price']) * int(item['quantity']) for item in data['items'])
+            
+            # Send detailed confirmation message
+            await context.bot.send_message(
                 chat_id=update.effective_chat.id,
-                document=pdf,
-                filename=f"order_{token}.pdf",
-                caption="Your order details and bill 📄"
+                text=f"🎉 Thank you for your order!\n\n"
+                     f"🔖 Order Token: {token}\n\n"
+                     f"📋 Order Summary:\n{items_summary}\n\n"
+                     f"💰 Total: ₹{total:.2f}\n\n"
+                     f"📍 Please collect your order from counter {data.get('counter', 1)}\n\n"
+                     f"📝 Your detailed order confirmation is attached below:",
+                parse_mode=ParseMode.HTML
             )
             
-        # Clean up PDF file
-        os.remove(pdf_path)
-        
+            # Send PDF file
+            with open(pdf_path, 'rb') as pdf:
+                await context.bot.send_document(
+                    chat_id=update.effective_chat.id,
+                    document=pdf,
+                    filename=f"order_{token}.pdf",
+                    caption="Your order details and bill 📄"
+                )
+                
+            # Clean up PDF file
+            os.remove(pdf_path)
+            
+        except Exception as e:
+            logger.error(f"Error generating or sending order confirmation: {e}", exc_info=True)
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="Your order was received, but there was an error generating the confirmation. Please contact support with your order token: " + token
+            )
+            
     except Exception as e:
-        logger.error(f"Error processing order: {e}", exc_info=True)
+        logger.error(f"Unexpected error processing order: {e}", exc_info=True)
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text="Sorry, there was an error processing your order. Please try again."
+            text="Sorry, there was an unexpected error processing your order. Please try again."
         )
 
 # Add a general message handler
