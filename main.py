@@ -8,6 +8,8 @@ from telegram.ext import (
     ApplicationBuilder,
     CommandHandler,
     ContextTypes,
+    MessageHandler,
+    filters,
 )
 from telegram.constants import ParseMode
 
@@ -98,6 +100,7 @@ async def telegram_webhook():
     try:
         data = await request.get_data()
         logger.info(f"Received webhook data length: {len(data)} bytes")
+        logger.info(f"Webhook data: {data.decode('utf-8')}")  # Add this line for debugging
         
         if not data:
             logger.error("Empty webhook data received")
@@ -160,8 +163,20 @@ async def post_init(app: ApplicationBuilder):
         raise
 
 # Register handlers
+# Add error handler
+async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.error(f"Update {update} caused error {context.error}")
+
+# Add a general message handler
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info(f"Received message: {update.message.text}")
+    await update.message.reply_text("I received your message!")
+
+# In the section where handlers are registered:
 logger.info("Registering command handlers")
 application.add_handler(CommandHandler("start", start))
+application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+application.add_error_handler(error_handler)
 
 # --- Start the App ---
 if __name__ == "__main__":
