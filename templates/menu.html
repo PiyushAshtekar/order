@@ -722,6 +722,13 @@
 </head>
 
 <body>
+    <div id="success-modal" class="modal">
+        <div class="modal-content">
+            <div id="order-details"></div>
+            <button onclick="document.getElementById('success-modal').style.display='none'" class="confirm-btn">OK</button>
+        </div>
+    </div>
+
     <div id="menu-page" class="page active">
         <div class="header">
             <!-- <div class="header-title">Menu</div> -->
@@ -1770,7 +1777,7 @@
             document.getElementById('order-details').innerHTML = `
         <p>Counter Number: <strong>${counterNumber}</strong></p>
         <p>Please collect your order from counter ${counterNumber}.</p>
-    `;
+        `;
             document.getElementById('success-modal').style.display = 'block';
         }
 
