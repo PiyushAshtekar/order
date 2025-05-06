@@ -4,6 +4,7 @@
 <head>
     <title>Mini App Menu</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         /* Modal styles */
@@ -719,7 +720,7 @@
             animation: flipOutLeft 0.6s forwards;
         }
     </style>
-</head>
+</head> 
 
 <body>
     <div id="success-modal" class="modal">
@@ -1767,9 +1768,14 @@
 
             console.log("Sending order details to bot:", JSON.stringify(orderDetails)); // Log before sending
 
-            window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
-
-            console.log("Order details sent to bot."); // Log after sending
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
+                console.log("Order details sent to bot."); // Log after sending
+            } else {
+                console.log("Telegram WebApp not available");
+                // Fallback handling when not in Telegram
+                alert("Order placed successfully!");
+            }
 
             resetOrder();
 
@@ -1793,7 +1799,6 @@
                 width: 200,
                 height: 200
             });
-
         }
 
         function calculateTotal() {
@@ -1835,7 +1840,14 @@
             document.getElementById('success-modal').style.display = 'block';
 
             // Send to Telegram bot
-            window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
+                console.log("Order details sent to bot.");
+            } else {
+                console.log("Telegram WebApp not available");
+                // Fallback handling when not in Telegram
+                alert("Order placed successfully!");
+            }
         }
 
         function closeSuccessModal() {
