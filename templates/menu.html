@@ -1103,7 +1103,6 @@
             
             .pay-button {
                 max-width: 600px;
-                left: 50%;
                 transform: translateX(-50%);
             }
         }
@@ -1131,7 +1130,7 @@
         /* Safe area adjustments for modern mobile devices */
         @supports (padding: max(0px)) {
             .pay-button {
-                padding-bottom: max(16px, env(safe-area-inset-bottom));
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
             }
             
             .page {
@@ -1629,8 +1628,8 @@ function processCashPayment() {
         paymentMethod: 'cash'
     };
 
-    // Send to Telegram bot first
-    window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
+    // Reset the order after successful payment
+    resetOrder();
 
     // Hide payment modal
     document.getElementById('payment-modal').style.display = 'none';
@@ -1640,40 +1639,66 @@ function processCashPayment() {
     `;
     document.getElementById('success-modal').style.display = 'block';
 
-    // Reset the order after data is sent
-    resetOrder();
-}
-
-function confirmOnlinePayment() {
-    const counterNumber = generateCounterNumber();
-    const orderDetails = {
-        counter: counterNumber,
-        items: Object.entries(cart).map(([item, quantity]) => {
-            const menuItem = document.querySelector(`[data-item="${item}"]`);
-            return {
-                name: menuItem.querySelector('.item-name').textContent.trim(),
-                price: menuItem.dataset.price,
-                quantity: quantity
-            };
-        }),
-        comment: document.getElementById('order-comment').value,
-        paymentMethod: 'online'
-    };
-
-    // Send to Telegram bot first
+    // Send to Telegram bot
     window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
-
-    // Hide payment modal
-    document.getElementById('online-payment-modal').style.display = 'none';
-    document.getElementById('order-details').innerHTML = `
-        <p>Counter Number: <strong>${counterNumber}</strong></p>
-        <p>Please collect your order from counter ${counterNumber}.</p>
-    `;
-    document.getElementById('success-modal').style.display = 'block';
-
-    // Reset the order after data is sent
-    resetOrder();
 }
+
+        function processOnlinePayment() {
+            document.getElementById('payment-modal').style.display = 'none';
+            document.getElementById('online-payment-modal').style.display = 'block';
+
+            // Generate QR code
+            const qrContainer = document.getElementById('qr-code');
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: 'upi://pay?pa=merchant@upi&pn=Restaurant&am=' + calculateTotal(),
+                width: 200,
+                height: 200
+            });
+            
+        }
+
+        function calculateTotal() {
+            let total = 0;
+            for (const [item, quantity] of Object.entries(cart)) {
+                const price = parseFloat(document.querySelector(`[data-item="${item}"]`).dataset.price);
+                total += price * quantity;
+            }
+            return total.toFixed(2);
+        }
+
+        function confirmOnlinePayment() {
+            const counterNumber = generateCounterNumber();
+            
+            // Reset the order after successful payment
+            resetOrder();
+            
+            // Hide payment modal
+            document.getElementById('online-payment-modal').style.display = 'none';
+            const orderDetails = {
+                counter: counterNumber,
+                items: Object.entries(cart).map(([item, quantity]) => {
+                    const menuItem = document.querySelector(`[data-item="${item}"]`);
+                    return {
+                        name: menuItem.querySelector('.item-name').textContent.trim(),
+                        price: menuItem.dataset.price,
+                        quantity: quantity
+                    };
+                }),
+                comment: document.getElementById('order-comment').value,
+                paymentMethod: 'online'
+            };
+
+            document.getElementById('online-payment-modal').style.display = 'none';
+            document.getElementById('order-details').innerHTML = `
+                <p>Counter Number: <strong>${counterNumber}</strong></p>
+                <p>Please collect your order from counter ${counterNumber}.</p>
+            `;
+            document.getElementById('success-modal').style.display = 'block';
+
+            // Send to Telegram bot
+            window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
+        }
 
         function closeSuccessModal() {
             document.getElementById('success-modal').style.display = 'none';
