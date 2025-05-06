@@ -16,24 +16,22 @@ WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 flask_app = Flask(__name__)
 bot_app = None  # Global variable to hold the Telegram Application
 
-async def set_webhook():
-    global bot_app
-    if bot_app:
+async def set_webhook(app):
+    if app:
         logging.info("Setting webhook...")
         try:
-            await bot_app.bot.set_webhook(f"{WEBHOOK_URL}/telegram-webhook")
+            await app.bot.set_webhook(f"{WEBHOOK_URL}/telegram-webhook")
             logging.info(f"Webhook set to: {WEBHOOK_URL}/telegram-webhook")
         except Exception as e:
             logging.error(f"Error setting webhook: {e}")
 
-@flask_app.before_first_request
-def initialize_bot():
+async def initialize_bot():
     global bot_app
     logging.basicConfig(level=logging.INFO)
     bot_app = ApplicationBuilder().token(BOT_TOKEN).build()
     bot_app.add_handler(CommandHandler("start", start))
-    asyncio.create_task(set_webhook())
-    logging.info("Telegram bot application initialized.")
+    await set_webhook(bot_app)
+    logging.info("Telegram bot application initialized and webhook set.")
 
 @flask_app.route('/')
 def index():
@@ -45,11 +43,10 @@ def menu():
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
-    user_carts = {}  # Initialize user_carts here for each command
+    user_carts = {}  # Initialize user_carts here
 
     # Send burger image
     try:
-        # Assuming 'static/burger.png' is in the same directory or accessible
         with open('static/burger.png', 'rb') as photo:
             await context.bot.send_photo(
                 chat_id=chat_id,
@@ -86,4 +83,5 @@ async def telegram_webhook():
     return await handle_webhook(request)
 
 if __name__ == "__main__":
+    asyncio.run(initialize_bot())
     flask_app.run(host="0.0.0.0")
