@@ -1,8 +1,9 @@
 import os
 import sys
+import json
 import logging
 from dotenv import load_dotenv
-from quart import Quart, request, render_template, Response
+from quart import Quart, request, render_template, Response, send_file
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import (
     ApplicationBuilder,
@@ -11,6 +12,7 @@ from telegram.ext import (
     MessageHandler,
     filters,
 )
+from utils import generate_token, generate_order_pdf
 from telegram.constants import ParseMode
 
 # Configure logging
@@ -175,6 +177,43 @@ async def post_init(app: ApplicationBuilder):
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.error(f"Update {update} caused error {context.error}")
 
+# Handle web app data
+async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        data = json.loads(update.message.web_app_data.data)
+        logger.info(f"Received order data: {data}")
+        
+        # Generate order token
+        token = generate_token()
+        
+        # Generate PDF
+        pdf_path = generate_order_pdf(data, token)
+        
+        # Send confirmation message with PDF
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=f"🎉 Thank you for your order!\n\n🔖 Your order token: {token}\n\n📍 Please collect your order from counter {data.get('counter', 1)}\n\nHere's your order confirmation:"
+        )
+        
+        # Send PDF file
+        with open(pdf_path, 'rb') as pdf:
+            await context.bot.send_document(
+                chat_id=update.effective_chat.id,
+                document=pdf,
+                filename=f"order_{token}.pdf",
+                caption="Your order details and bill 📄"
+            )
+            
+        # Clean up PDF file
+        os.remove(pdf_path)
+        
+    except Exception as e:
+        logger.error(f"Error processing order: {e}", exc_info=True)
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="Sorry, there was an error processing your order. Please try again."
+        )
+
 # Add a general message handler
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info(f"Received message: {update.message.text}")
@@ -184,6 +223,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 logger.info("Registering command handlers")
 application.add_handler(CommandHandler("start", start))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+application.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, handle_webapp_data))
 application.add_error_handler(error_handler)
 
 # --- Start the App ---
