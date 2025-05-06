@@ -11,6 +11,7 @@ from telegram.ext import (
     filters,
 )
 from telegram.constants import ParseMode
+import asyncio
 
 # Load environment variables
 load_dotenv()
@@ -85,10 +86,14 @@ def main():
     logging.basicConfig(level=logging.INFO)
     app = ApplicationBuilder().token(BOT_TOKEN).post_init(post_init).build()
     logging.info(f"Application object: {app}") # Log the application object
-
-    # Add handlers
     app.add_handler(CommandHandler("start", start))
-    # You can add other handlers here for different bot commands
+
+    async def run_app():
+        await app.initialize()
+        await app.start()
+        # We don't need to run app.updater.start() for webhook
+
+    asyncio.run(run_app())
 
     # Note: We are not running app.run_polling() here. Flask will handle the incoming webhook.
 
