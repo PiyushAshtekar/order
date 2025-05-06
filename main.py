@@ -194,15 +194,37 @@ if __name__ == "__main__":
         port = int(os.getenv("PORT", 10000))
         logger.info(f"Starting application on port {port}")
         
+        # Initialize the application first
+        logger.info("Initializing application...")
+        await application.initialize()
+        
         # Setup webhook
         try:
             await post_init(application)
         except Exception as e:
             logger.error(f"Failed to initialize webhook: {e}", exc_info=True)
             sys.exit(1)
-            
+        
+        # Start the application
+        logger.info("Starting application...")
+        await application.start()
+        
         # Start Quart server
         logger.info("Starting Quart server")
         await quart_app.run_task(host="0.0.0.0", port=port)
 
     asyncio.run(run())
+
+
+@quart_app.before_serving
+async def startup():
+    logger.info("Initializing application before serving...")
+    await application.initialize()
+    await application.start()
+    await post_init(application)
+
+@quart_app.after_serving
+async def shutdown():
+    logger.info("Shutting down application...")
+    await application.stop()
+    await application.shutdown()
