@@ -100,13 +100,17 @@ async def telegram_webhook():
     try:
         data = await request.get_data()
         logger.info(f"Received webhook data length: {len(data)} bytes")
-        logger.info(f"Webhook data: {data.decode('utf-8')}")  # Add this line for debugging
         
         if not data:
             logger.error("Empty webhook data received")
             return Response("No data", status=400)
-            
-        update = Update.de_json(data.decode("utf-8"), bot)
+        
+        # Convert the string data to JSON first
+        import json
+        json_data = json.loads(data.decode("utf-8"))
+        logger.info(f"Webhook data: {json_data}")
+        
+        update = Update.de_json(json_data, bot)
         logger.info(f"Processing update ID: {update.update_id if update else 'None'}")
         
         await application.process_update(update)
@@ -144,11 +148,15 @@ async def post_init(app: ApplicationBuilder):
     try:
         # Remove any existing webhook first
         logger.info("Removing existing webhook...")
-        await app.bot.delete_webhook()
+        await app.bot.delete_webhook(drop_pending_updates=True)
         
         # Set the new webhook
         logger.info("Setting new webhook...")
-        await app.bot.set_webhook(webhook_url)
+        await app.bot.set_webhook(
+            url=webhook_url,
+            allowed_updates=['message', 'callback_query'],
+            drop_pending_updates=True
+        )
         
         # Verify the webhook was set properly
         webhook_info = await app.bot.get_webhook_info()
