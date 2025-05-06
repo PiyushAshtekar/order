@@ -179,6 +179,7 @@ async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # Handle web app data
 async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info("handle_webapp_data called")  # Log function entry
     try:
         # Verify we have web_app_data
         if not update.message or not update.message.web_app_data:
@@ -189,12 +190,15 @@ async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE)
             )
             return
 
+        logger.info(f"Raw web_app_data: {update.message.web_app_data.data}")  # Log raw data
+
         # Parse the order data
         try:
             data = json.loads(update.message.web_app_data.data)
+            logger.info(f"Parsed JSON data: {data}")  # Log parsed data
             if not data or 'items' not in data:
                 raise ValueError("Invalid order data format")
-            logger.info(f"Received order data: {data}")
+            logger.info(f"Valid order data: {data}")
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse order data: {e}")
             await context.bot.send_message(
@@ -212,15 +216,18 @@ async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
         # Generate order token
         token = generate_token()
-        
+        logger.info(f"Generated token: {token}")
+
         try:
             # Generate PDF
             pdf_path = generate_order_pdf(data, token)
-            
+            logger.info(f"Generated PDF path: {pdf_path}")
+
             # Prepare order summary
             items_summary = "\n".join([f"• {item['quantity']}x {item['name']}" for item in data['items']])
             total = sum(float(item['price']) * int(item['quantity']) for item in data['items'])
-            
+            logger.info(f"Order summary: {items_summary}, Total: {total}")
+
             # Send detailed confirmation message
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
@@ -232,7 +239,8 @@ async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE)
                      f"📝 Your detailed order confirmation is attached below:",
                 parse_mode=ParseMode.HTML
             )
-            
+            logger.info("Confirmation message sent")
+
             # Send PDF file
             with open(pdf_path, 'rb') as pdf:
                 await context.bot.send_document(
@@ -241,23 +249,27 @@ async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE)
                     filename=f"order_{token}.pdf",
                     caption="Your order details and bill 📄"
                 )
-                
+            logger.info("PDF file sent")
+
             # Clean up PDF file
             os.remove(pdf_path)
-            
+            logger.info("PDF file cleaned up")
+
         except Exception as e:
             logger.error(f"Error generating or sending order confirmation: {e}", exc_info=True)
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text="Your order was received, but there was an error generating the confirmation. Please contact support with your order token: " + token
             )
-            
+
     except Exception as e:
         logger.error(f"Unexpected error processing order: {e}", exc_info=True)
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text="Sorry, there was an unexpected error processing your order. Please try again."
         )
+    finally:
+        logger.info("handle_webapp_data completed")  # Log function exit
 
 # Add a general message handler
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
