@@ -5,13 +5,7 @@ import logging
 from dotenv import load_dotenv
 from quart import Quart, request, render_template, Response, send_file
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
-from telegram.ext import (
-    ApplicationBuilder,
-    CommandHandler,
-    ContextTypes,
-    MessageHandler,
-    filters,
-)
+from telegram.ext import (ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters)
 from utils import generate_token, generate_order_pdf
 from telegram.constants import ParseMode
 

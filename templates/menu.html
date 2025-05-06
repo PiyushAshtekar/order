@@ -1810,43 +1810,62 @@
             return total.toFixed(2);
         }
 
+        // Initialize Telegram WebApp
+        let tg = window.Telegram.WebApp;
+
+        // Ensure WebApp is ready
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            // Enable closing confirmation dialog
+            window.Telegram.WebApp.enableClosingConfirmation();
+        }
+
         function confirmOnlinePayment() {
-            const counterNumber = generateCounterNumber();
+            try {
+                const counterNumber = generateCounterNumber();
 
-            // Reset the order after successful payment
-            resetOrder();
+                // Reset the order after successful payment
+                resetOrder();
 
-            // Hide payment modal
-            document.getElementById('online-payment-modal').style.display = 'none';
-            const orderDetails = {
-                counter: counterNumber,
-                items: Object.entries(cart).map(([item, quantity]) => {
-                    const menuItem = document.querySelector(`[data-item="${item}"]`);
-                    return {
-                        name: menuItem.querySelector('.item-name').textContent.trim(),
-                        price: menuItem.dataset.price,
-                        quantity: quantity
-                    };
-                }),
-                comment: document.getElementById('order-comment').value,
-                paymentMethod: 'online'
-            };
+                // Hide payment modal
+                document.getElementById('online-payment-modal').style.display = 'none';
+                const orderDetails = {
+                    counter: counterNumber,
+                    items: Object.entries(cart).map(([item, quantity]) => {
+                        const menuItem = document.querySelector(`[data-item="${item}"]`);
+                        return {
+                            name: menuItem.querySelector('.item-name').textContent.trim(),
+                            price: menuItem.dataset.price,
+                            quantity: quantity
+                        };
+                    }),
+                    comment: document.getElementById('order-comment').value,
+                    paymentMethod: 'online',
+                    timestamp: new Date().toISOString()
+                };
 
-            document.getElementById('online-payment-modal').style.display = 'none';
-            document.getElementById('order-details').innerHTML = `
-                <p>Counter Number: <strong>${counterNumber}</strong></p>
-                <p>Please collect your order from counter ${counterNumber}.</p>
-            `;
-            document.getElementById('success-modal').style.display = 'block';
+                document.getElementById('order-details').innerHTML = `
+                    <p>Counter Number: <strong>${counterNumber}</strong></p>
+                    <p>Please collect your order from counter ${counterNumber}.</p>
+                `;
+                document.getElementById('success-modal').style.display = 'block';
 
-            // Send to Telegram bot
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
-                console.log("Order details sent to bot.");
-            } else {
-                console.log("Telegram WebApp not available");
-                // Fallback handling when not in Telegram
-                alert("Order placed successfully!");
+                // Send to Telegram bot with proper error handling
+                if (window.Telegram && window.Telegram.WebApp) {
+                    try {
+                        window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
+                        console.log("Order details sent to bot successfully.");
+                    } catch (error) {
+                        console.error("Error sending data to Telegram bot:", error);
+                        alert("There was an error processing your order. Please try again.");
+                    }
+                } else {
+                    console.warn("Telegram WebApp not available - running in standalone mode");
+                    alert("Order placed successfully! (Standalone Mode)");
+                }
+            } catch (error) {
+                console.error("Error in confirmOnlinePayment:", error);
+                alert("There was an error processing your order. Please try again.");
             }
         }
 
