@@ -269,13 +269,13 @@ async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE)
 # Add a general message handler
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info(f"Received message: {update.message.text}")
-    await update.message.reply_text("I received your message!")
+    await update.message.reply_text("I received your message!") 
 
 # In the section where handlers are registered:
 logger.info("Registering command handlers")
 application.add_handler(CommandHandler("start", start))
+application.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, handle_webapp_data))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-application.add_handler(MessageHandler(filters.ALL, handle_webapp_data))
 application.add_error_handler(error_handler)
 
 # --- Start the App ---

@@ -4,7 +4,7 @@
 <head>
     <title>Mini App Menu</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js?57"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         /* Modal styles */
@@ -725,8 +725,30 @@
 <body>
     <div id="success-modal" class="modal">
         <div class="modal-content">
-            <div id="order-details"></div>
-            <button onclick="document.getElementById('success-modal').style.display='none'" class="confirm-btn">OK</button>
+            <h2 style="color: #4CAF50; margin-bottom: 20px;">Order Confirmed! 🎉</h2>
+            <div id="order-details" style="text-align: left; margin-bottom: 20px;">
+                <div class="order-summary" style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <h3 style="color: #333; margin-bottom: 10px;">Order Summary</h3>
+                    <div id="order-items" style="margin-bottom: 15px;"></div>
+                    <div style="border-top: 2px dashed #ddd; padding-top: 10px;">
+                        <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                            <span>Total Amount:</span>
+                            <span id="order-total"></span>
+                        </div>
+                    </div>
+                </div>
+                <div style="background: #e8f5e9; padding: 15px; border-radius: 8px;">
+                    <div style="color: #2e7d32; font-weight: bold;">
+                        <span>✅ Payment Status:</span>
+                        <span>Successful</span>
+                    </div>
+                    <div style="color: #666; font-size: 0.9em; margin-top: 5px;">
+                        <span>Order ID:</span>
+                        <span id="order-id"></span>
+                    </div>
+                </div>
+            </div>
+            <button onclick="document.getElementById('success-modal').style.display='none'" class="confirm-btn">Done</button>
         </div>
     </div>
 
@@ -1844,9 +1866,40 @@
                     timestamp: new Date().toISOString()
                 };
 
+                // Prepare order items details
+                const orderItemsHtml = orderDetails.items.map(item => `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span>${item.name} × ${item.quantity}</span>
+                        <span>₹${(item.price * item.quantity).toFixed(2)}</span>
+                    </div>
+                `).join('');
+
                 document.getElementById('order-details').innerHTML = `
-                    <p>Counter Number: <strong>${counterNumber}</strong></p>
-                    <p>Please collect your order from counter ${counterNumber}.</p>
+                    <div class="order-summary" style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <h3 style="color: #333; margin-bottom: 10px;">Order Summary</h3>
+                        <div id="order-items">${orderItemsHtml}</div>
+                        <div style="border-top: 2px dashed #ddd; padding-top: 10px;">
+                            <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                                <span>Total Amount:</span>
+                                <span>₹${calculateTotal()}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background: #e8f5e9; padding: 15px; border-radius: 8px;">
+                        <div style="color: #2e7d32; font-weight: bold;">
+                            <span>✅ Payment Status:</span>
+                            <span>Successful</span>
+                        </div>
+                        <div style="color: #666; font-size: 0.9em; margin-top: 5px;">
+                            <span>Counter Number:</span>
+                            <span><strong>${counterNumber}</strong></span>
+                        </div>
+                        <div style="color: #666; font-size: 0.9em; margin-top: 5px;">
+                            <span>Order ID:</span>
+                            <span>#${Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
+                        </div>
+                    </div>
+                    <p style="margin-top: 15px; color: #4CAF50;">Please collect your order from counter ${counterNumber}</p>
                 `;
                 document.getElementById('success-modal').style.display = 'block';
 
