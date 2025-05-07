@@ -172,6 +172,7 @@ async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.error(f"Update {update} caused error {context.error}")
 
 # Handle web app data
+logger.info(f"Received message: {update.message.to_dict()}")
 async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info("handle_webapp_data called")  # Log function entry
     try:
