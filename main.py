@@ -150,7 +150,7 @@ async def post_init(app: ApplicationBuilder):
         logger.info("Setting new webhook...")
         await app.bot.set_webhook(
             url=webhook_url,
-            allowed_updates=['message', 'callback_query'],
+            allowed_updates=['message', 'callback_query', 'web_app_data'],
             drop_pending_updates=True
         )
         
