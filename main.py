@@ -166,146 +166,13 @@ async def post_init(app: ApplicationBuilder):
         logger.error(f"Failed to set webhook: {e}", exc_info=True)
         raise
 
-# Handle web app data
-async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info("handle_webapp_data called")  # Log function entry
-    try:
-        # Verify we have web_app_data
-        if not update.message or not update.message.web_app_data:
-            logger.error("No web_app_data received")
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text="Sorry, no order data was received. Please try again."
-            )
-            return
-
-        logger.info(f"Raw web_app_data: {update.message.web_app_data.data}")  # Log raw data
-
-        # Parse the order data
-        try:
-            data = json.loads(update.message.web_app_data.data)
-            logger.info(f"Parsed JSON data: {data}")  # Log parsed data
-            
-            # Validate order data structure
-            if not data:
-                raise ValueError("Empty order data")
-            if not isinstance(data, dict):
-                raise ValueError("Order data must be a dictionary")
-            if 'items' not in data:
-                raise ValueError("Missing 'items' in order data")
-            if not isinstance(data['items'], list):
-                raise ValueError("'items' must be a list")
-            if not data['items']:
-                raise ValueError("Order items list is empty")
-                
-            # Validate each item
-            for idx, item in enumerate(data['items']):
-                if not isinstance(item, dict):
-                    raise ValueError(f"Item {idx} must be a dictionary")
-                required_fields = ['name', 'quantity', 'price']
-                missing_fields = [field for field in required_fields if field not in item]
-                if missing_fields:
-                    raise ValueError(f"Item {idx} missing required fields: {', '.join(missing_fields)}")
-                
-                # Validate data types
-                if not isinstance(item['name'], str):
-                    raise ValueError(f"Item {idx} name must be a string")
-                try:
-                    item['quantity'] = int(item['quantity'])
-                    item['price'] = float(item['price'])
-                except (ValueError, TypeError):
-                    raise ValueError(f"Item {idx} has invalid quantity or price format")
-                    
-            logger.info(f"Order data validation successful: {data}")
-            
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse order data: {e}")
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text="Sorry, there was an error with your order data. Please try again."
-            )
-            return
-        except ValueError as e:
-            logger.error(f"Invalid order data: {e}")
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text="Sorry, your order appears to be empty or invalid. Please try again."
-            )
-            return
-
-        # Generate order token
-        token = generate_token()
-        logger.info(f"Generated token: {token}")
-
-        try:
-            # Generate PDF
-            pdf_path = generate_order_pdf(data, token)
-            logger.info(f"Generated PDF path: {pdf_path}")
-
-            # Prepare order summary
-            items_summary = "\n".join([f"• {item['quantity']}x {item['name']}" for item in data['items']])
-            total = sum(float(item['price']) * int(item['quantity']) for item in data['items'])
-            logger.info(f"Order summary: {items_summary}, Total: {total}")
-
-            # Send detailed confirmation message
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text=f"🎉 Thank you for your order!\n\n"
-                     f"🔖 Order Token: {token}\n\n"
-                     f"📋 Order Summary:\n{items_summary}\n\n"
-                     f"💰 Total: ₹{total:.2f}\n\n"
-                     f"📍 Please collect your order from counter {data.get('counter', 1)}\n\n"
-                     f"📝 Your detailed order confirmation is attached below:",
-                parse_mode=ParseMode.HTML
-            )
-            logger.info("Confirmation message sent")
-
-            # Send PDF file
-            with open(pdf_path, 'rb') as pdf:
-                await context.bot.send_document(
-                    chat_id=update.effective_chat.id,
-                    document=pdf,
-                    filename=f"order_{token}.pdf",
-                    caption="Your order details and bill 📄"
-                )
-            logger.info("PDF file sent")
-
-            # Clean up PDF file
-            os.remove(pdf_path)
-            logger.info("PDF file cleaned up")
-
-        except Exception as e:
-            logger.error(f"Error generating or sending order confirmation: {e}", exc_info=True)
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text="Your order was received, but there was an error generating the confirmation. Please contact support with your order token: " + token
-            )
-
-    except Exception as e:
-        logger.error(f"Unexpected error processing order: {e}", exc_info=True)
-        await context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text="Sorry, there was an unexpected error processing your order. Please try again."
-        )
-    finally:
-        logger.info("handle_webapp_data completed")  # Log function exit
-
+# Register handlers
 # Add error handler
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.error(f"Update {update} caused error {context.error}")
 
-# Add a general message handler
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"Received message: {update.message.text}")
-    await update.message.reply_text("I received your message!")
-
-# Register handlers
-logger.info("Registering command handlers")
-application.add_handler(CommandHandler('start', start))
-application.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, handle_webapp_data))
-application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-application.add_error_handler(error_handler)
-
+# Handle web app data
+# logger.info(f"Received message: {update.message.to_dict()}")
 async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info("handle_webapp_data called")  # Log function entry
     try:
@@ -324,36 +191,6 @@ async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE)
         try:
             data = json.loads(update.message.web_app_data.data)
             logger.info(f"Parsed JSON data: {data}")  # Log parsed data
-            
-            # Check if this is a preview update
-            if data.get('preview', False):
-                # Handle preview update
-                items_summary = "\n".join([f"• {item['quantity']}x {item['name']} - ₹{float(item['price']) * int(item['quantity']):.2f}" 
-                                          for item in data['items']])
-                total = sum(float(item['price']) * int(item['quantity']) for item in data['items'])
-                
-                preview_text = f"🛒 Current Order:\n\n{items_summary}\n\n💰 Total: ₹{total:.2f}"
-                
-                # Delete previous preview message if it exists
-                if hasattr(context.user_data, 'preview_message_id'):
-                    try:
-                        await context.bot.delete_message(
-                            chat_id=update.effective_chat.id,
-                            message_id=context.user_data.preview_message_id
-                        )
-                    except Exception as e:
-                        logger.error(f"Failed to delete previous preview: {e}")
-                
-                # Send new preview message
-                preview_message = await context.bot.send_message(
-                    chat_id=update.effective_chat.id,
-                    text=preview_text,
-                    parse_mode=ParseMode.HTML
-                )
-                context.user_data.preview_message_id = preview_message.message_id
-                return
-            
-            # Handle final order submission
             if not data or 'items' not in data:
                 raise ValueError("Invalid order data format")
             logger.info(f"Valid order data: {data}")
@@ -433,6 +270,13 @@ async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE)
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info(f"Received message: {update.message.text}")
     await update.message.reply_text("I received your message!")
+
+# In the section where handlers are registered:
+logger.info("Registering command handlers")
+application.add_handler(CommandHandler("start", start))
+application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+application.add_handler(MessageHandler(filters.ALL, handle_webapp_data))
+application.add_error_handler(error_handler)
 
 # --- Start the App ---
 if __name__ == "__main__":

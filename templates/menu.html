@@ -1620,8 +1620,6 @@
                     badge.classList.remove('flip-in');
                     badge.removeEventListener('animationend', handler);
                 });
-                // Send preview update to bot
-                sendPreviewUpdate();
             } else {
                 badge.classList.remove('flip-in');
                 badge.classList.add('flip-out');
@@ -1630,8 +1628,6 @@
                     badge.classList.remove('flip-out');
                     badge.removeEventListener('animationend', handler);
                 });
-                // Send preview update when item is removed
-                sendPreviewUpdate();
             }
 
             if (cart[item] <= 0) {
@@ -1767,8 +1763,7 @@
                     };
                 }),
                 comment: document.getElementById('order-comment').value,
-                paymentMethod: 'cash',
-                preview: false
+                paymentMethod: 'cash'
             };
 
             console.log("Sending order details to bot:", JSON.stringify(orderDetails)); // Log before sending
@@ -1823,28 +1818,6 @@
             window.Telegram.WebApp.ready();
             // Enable closing confirmation dialog
             window.Telegram.WebApp.enableClosingConfirmation();
-        }
-
-        // Function to send preview updates to the bot
-        function sendPreviewUpdate() {
-            if (Object.keys(cart).length === 0) return;
-
-            const previewData = {
-                items: Object.entries(cart).map(([item, quantity]) => {
-                    const menuItem = document.querySelector(`[data-item="${item}"]`);
-                    return {
-                        name: menuItem.querySelector('.item-name').textContent.trim(),
-                        price: menuItem.dataset.price,
-                        quantity: quantity
-                    };
-                }),
-                preview: true,
-                total: calculateTotal()
-            };
-
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.sendData(JSON.stringify(previewData));
-            }
         }
 
         function confirmOnlinePayment() {
