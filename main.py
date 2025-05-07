@@ -274,8 +274,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 logger.info("Registering command handlers")
 application.add_handler(CommandHandler("start", start))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-application.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, handle_webapp_data))
+application.add_handler(MessageHandler(filters.ALL, handle_webapp_data))
 application.add_error_handler(error_handler)
+
+# Add a catch-all logger
+async def log_all_updates(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info(f"ALL UPDATES: {update}")
+
+application.add_handler(MessageHandler(filters.ALL, log_all_updates))
 
 # --- Start the App ---
 if __name__ == "__main__":
