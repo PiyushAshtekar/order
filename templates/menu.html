@@ -1846,9 +1846,6 @@
             try {
                 const counterNumber = generateCounterNumber();
 
-                // Reset the order after successful payment
-                resetOrder();
-
                 // Hide payment modal
                 document.getElementById('online-payment-modal').style.display = 'none';
                 const orderDetails = {
@@ -1916,6 +1913,8 @@
                     console.warn("Telegram WebApp not available - running in standalone mode");
                     alert("Order placed successfully! (Standalone Mode)");
                 }
+                // Now reset the order after sending
+                resetOrder();
             } catch (error) {
                 console.error("Error in confirmOnlinePayment:", error);
                 alert("There was an error processing your order. Please try again.");
