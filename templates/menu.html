@@ -720,14 +720,15 @@
             animation: flipOutLeft 0.6s forwards;
         }
     </style>
-</head> 
+</head>
 
 <body>
     <div id="success-modal" class="modal">
         <div class="modal-content">
             <h2 style="color: #4CAF50; margin-bottom: 20px;">Order Confirmed! 🎉</h2>
             <div id="order-details" style="text-align: left; margin-bottom: 20px;">
-                <div class="order-summary" style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <div class="order-summary"
+                    style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                     <h3 style="color: #333; margin-bottom: 10px;">Order Summary</h3>
                     <div id="order-items" style="margin-bottom: 15px;"></div>
                     <div style="border-top: 2px dashed #ddd; padding-top: 10px;">
@@ -748,7 +749,8 @@
                     </div>
                 </div>
             </div>
-            <button onclick="document.getElementById('success-modal').style.display='none'" class="confirm-btn">Done</button>
+            <button onclick="document.getElementById('success-modal').style.display='none'"
+                class="confirm-btn">Done</button>
         </div>
     </div>
 
@@ -1791,12 +1793,12 @@
             console.log("Sending order details to bot:", JSON.stringify(orderDetails)); // Log before sending
 
             if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
-                console.log("Order details sent to bot."); // Log after sending
-            } else {
-                console.log("Telegram WebApp not available");
-                // Fallback handling when not in Telegram
-                alert("Order placed successfully!");
+                try {
+                    window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
+                    window.Telegram.WebApp.close(); // Add this line
+                } catch (e) {
+                    console.error("Error sending data:", e);
+                }
             }
 
             resetOrder();
