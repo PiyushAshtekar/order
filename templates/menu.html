@@ -1,48 +1,1934 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>My Simple Mini App</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script>
-        Telegram.WebApp.ready();
-
-        function sendDataToBot() {
-            const dataToSend = {
-                product: "Awesome Gadget",
-                price: 29.99,
-                user_id: Telegram.WebApp.initDataUnsafe?.user?.id || "unknown"
-            };
-            Telegram.WebApp.sendData(JSON.stringify(dataToSend));
-            Telegram.WebApp.close(); // Optionally close the Mini App after sending data
-        }
-
-        function closeWebApp() {
-            Telegram.WebApp.close();
-        }
-    </script>
+    <title>Mini App Menu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <script src="https://telegram.org/js/telegram-web-app.js?57"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        body {
-            font-family: sans-serif;
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 20% auto;
+            padding: 20px;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+        }
+
+        .payment-options {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .payment-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cash-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .online-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .payment-icon {
+            font-size: 24px;
+        }
+
+        .qr-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
+            gap: 16px;
+            margin: 20px 0;
         }
-        button {
-            padding: 10px 20px;
+
+        #qr-code {
+            padding: 16px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .confirm-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
             font-size: 16px;
             cursor: pointer;
-            margin-top: 15px;
+            margin-top: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .confirm-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        /* Base styles and resets */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            max-width: 100vw;
+            overflow-x: hidden;
+            min-height: 90vh;
+        }
+
+        /* Container styles */
+        .page {
+            min-height: 90vh;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 0;
+        }
+
+        .page.active {
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+            min-height: 90vh;
+            overflow: hidden;
+        }
+
+        /* Header styles */
+        /* .header {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: white;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            gap: 12px;
+            justify-content: center;
+            max-width: 100vw;
+            border-radius: 0 0 12px 12px;
+            text-align: center;
+        } */
+
+        .back-button {
+            font-size: 24px;
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .header-title {
+            flex: 1;
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 12px 0;
+            background: linear-gradient(45deg, #3498db, #2ecc71);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .edit-button {
+            font-size: 16px;
+            color: #4CAF50;
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        /* Order summary styles */
+        .order-summary {
+            background: white;
+            margin: 16px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .order-item-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .order-item-image {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .order-item-details {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .order-item-name {
+            font-size: 16px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .order-item-quantity {
+            color: #ff6b35;
+            font-weight: 600;
+        }
+
+        .order-item-variant {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .order-item-price {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Comment section styles */
+        .comment-section {
+            margin: 16px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .comment-section-title {
+            color: #666;
+            font-size: 16px;
+            padding: 16px 16px 8px 16px;
+        }
+
+        .comment-input {
+            width: 100%;
+            min-height: 120px;
+            border: none;
+            padding: 16px;
+            font-size: 16px;
+            color: #333;
+            background: white;
+            resize: none;
+            box-sizing: border-box;
+        }
+
+        .comment-input::placeholder {
+            color: #999;
+        }
+
+        /* Pay button styles */
+        .pay-button {
+            position: fixed;
+            bottom: 16px;
+            left: 16px;
+            transform: translateX(-50%);
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: pulseButton 2s infinite;
+            width: calc(100% - 32px);
+            max-width: 600px;
+        }
+
+        .pay-button:hover {
+            transform: scale(1.02);
+            background: #45a049;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+        }
+
+        .pay-button:active {
+            transform: scale(0.98);
+        }
+
+        @keyframes pulseButton {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (min-width: 768px) {
+            .page {
+                max-width: 600px;
+                margin: 0 auto;
+                height: 100vh;
+            }
+
+            .header {
+                max-width: 600px;
+                margin: 0 auto;
+            }
+
+            .pay-button {
+                max-width: 600px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+        }
+
+        @media (max-width: 380px) {
+            .order-item {
+                padding: 12px;
+            }
+
+            .order-item-image {
+                width: 40px;
+                height: 40px;
+                font-size: 28px;
+            }
+
+            .order-item-name {
+                font-size: 14px;
+            }
+
+            .order-item-price {
+                font-size: 14px;
+                font-weight: 600;
+            }
+
+            .menu-grid {
+                grid-template-columns: repeat(2, 1fr);
+                /* Adjust for smaller screens */
+            }
+        }
+
+        /* Safe area adjustments for modern mobile devices */
+        @supports (padding: max(0px)) {
+            .pay-button {
+                padding-bottom: max(16px, env(safe-area-inset-bottom));
+            }
+
+            .page {
+                padding-bottom: max(80px, calc(80px + env(safe-area-inset-bottom)));
+            }
+        }
+
+        .menu-grid {
+            flex: 1 1 auto;
+            overflow-y: auto;
+            max-height: none;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            padding: 12px;
+            margin: 0 auto;
+            max-width: 100%;
+        }
+
+        .menu-item {
+            padding: 12px;
+            text-align: center;
+        }
+
+        .item-image {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .item-name {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .item-price {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .quantity-controls {
+            display: flex;
+            flex-direction: row;
+            display: none;
+            /* Initially hidden */
+            justify-content: center;
+            gap: 8px;
+            align-items: center;
+            background: #f5f5f5;
+            border-radius: 8px;
+            /* padding: 4px 8px; */
+            /* margin-top: 8px; */
+        }
+
+        .add-button {
+            background: #ffa726;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 68px;
+            display: block;
+            /* Initially visible */
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .quantity-btn-minus {
+            background: linear-gradient(145deg, #ff4d4d, #ff0000);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 8px;
+            /* box-shadow: 0 2px 4px rgba(255, 0, 0, 0.2);
+            transition: all 0.3s ease; */
+            width: 2rem;
+        }
+
+        .quantity-btn-minus:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 0, 0, 0.3);
+        }
+
+        .quantity-btn-minus:active {
+            transform: scale(0.95);
+        }
+
+        .quantity-btn-plus {
+            background: #ffa726;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 8px;
+            /* box-shadow: 0 2px 4px rgba(255, 107, 53, 0.2);
+            transition: all 0.3s ease; */
+            width: 2rem;
+        }
+
+        .quantity-btn-plus:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+        }
+
+        .quantity-btn-plus:active {
+            transform: scale(0.95);
+        }
+
+        .quantity {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            min-width: 24px;
+            text-align: center;
+            background: none;
+            position: static;
+            border-radius: 0;
+            padding: 0;
+            height: auto;
+            display: inline;
+            box-shadow: none;
+        }
+
+        .quantity-controls.active {
+            display: flex;
+        }
+
+        .add-button.hidden {
+            display: none;
+        }
+
+        .view-order-button {
+            position: fixed;
+            bottom: 16px;
+            left: 0;
+            right: 0;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 16px;
+            font-size: 16px;
+            cursor: pointer;
+            display: none;
+            z-index: 100;
+            border-radius: 16px;
+            margin: 0 16px;
+            max-width: calc(100% - 32px);
+        }
+
+        .view-order-button.active {
+            display: block;
+            transform: translateY(0);
+            opacity: 1;
+            animation: slideUp 0.3s ease;
+        }
+
+        .view-order-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .view-order-button:active {
+            animation: scaleButton 0.2s ease;
+        }
+
+        .order-item {
+            animation: fadeIn 0.3s ease;
+            transition: all 0.2s ease;
+        }
+
+        .order-item:hover {
+            transform: translateX(4px);
+        }
+
+        .header {
+            animation: slideUp 0.3s ease;
+        }
+
+        /* Essential animations */
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Transitions */
+        .page,
+        .menu-item,
+        .item-image,
+        .quantity-btn,
+        .quantity,
+        .view-order-button,
+        .order-item,
+        .pay-button {
+            transition: all 0.3s ease;
+        }
+
+        /* Active states */
+        .page.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* .menu-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        } */
+
+        .quantity-btn:hover {
+            background: #d0d0d0;
+        }
+
+        .quantity-btn:active {
+            transform: scale(0.9);
+        }
+
+        .view-order-button.active {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .view-order-button:hover,
+        .pay-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .order-item:hover {
+            transform: translateX(4px);
+        }
+
+        .pay-button:active {
+            transform: scale(0.98);
+        }
+
+        /* Flip in from left */
+        .quantity-controls.flip-in {
+            animation: flipInLeft 0.6s forwards;
+        }
+
+        @keyframes flipInLeft {
+            from {
+                opacity: 0;
+                transform: rotateY(-90deg);
+            }
+
+            to {
+                opacity: 1;
+                transform: rotateY(0deg);
+            }
+        }
+
+        /* Flip out to right */
+        .quantity-controls.flip-out {
+            animation: flipOutRight 0.6s forwards;
+        }
+
+        @keyframes flipOutRight {
+            from {
+                opacity: 1;
+                transform: rotateY(0deg);
+            }
+
+            to {
+                opacity: 0;
+                transform: rotateY(90deg);
+            }
+        }
+
+        /* Flip in from right */
+        .add-button.flip-in {
+            animation: flipInRight 0.6s forwards;
+        }
+
+        @keyframes flipInRight {
+            from {
+                opacity: 0;
+                transform: rotateY(90deg);
+            }
+
+            to {
+                opacity: 1;
+                transform: rotateY(0deg);
+            }
+        }
+
+        /* Flip out to left */
+        .add-button.flip-out {
+            animation: flipOutLeft 0.6s forwards;
+        }
+
+        @keyframes flipOutLeft {
+            from {
+                opacity: 1;
+                transform: rotateY(0deg);
+            }
+
+            to {
+                opacity: 0;
+                transform: rotateY(-90deg);
+            }
+        }
+
+        .quantity-badge {
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            text-align: center;
+            position: absolute;
+            top: 5%;
+            right: 10%;
+            background: #ff6b35;
+            border-radius: 50%;
+            padding: 2px;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 2;
+        }
+
+        .quantity-badge.flip-in {
+            animation: flipInRight 0.6s forwards;
+        }
+
+        .quantity-badge.flip-out {
+            animation: flipOutLeft 0.6s forwards;
         }
     </style>
-</head>
+</head> 
+
 <body>
-    <h1>Welcome to My Mini App!</h1>
-    <p>Click the button below to send data to the bot.</p>
-    <button onclick="sendDataToBot()">Send Data to Bot</button>
-    <button onclick="closeWebApp()">Close Mini App</button>
+    <div id="success-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="color: #4CAF50; margin-bottom: 20px;">Order Confirmed! 🎉</h2>
+            <div id="order-details" style="text-align: left; margin-bottom: 20px;">
+                <div class="order-summary" style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <h3 style="color: #333; margin-bottom: 10px;">Order Summary</h3>
+                    <div id="order-items" style="margin-bottom: 15px;"></div>
+                    <div style="border-top: 2px dashed #ddd; padding-top: 10px;">
+                        <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                            <span>Total Amount:</span>
+                            <span id="order-total"></span>
+                        </div>
+                    </div>
+                </div>
+                <div style="background: #e8f5e9; padding: 15px; border-radius: 8px;">
+                    <div style="color: #2e7d32; font-weight: bold;">
+                        <span>✅ Payment Status:</span>
+                        <span>Successful</span>
+                    </div>
+                    <div style="color: #666; font-size: 0.9em; margin-top: 5px;">
+                        <span>Order ID:</span>
+                        <span id="order-id"></span>
+                    </div>
+                </div>
+            </div>
+            <button onclick="document.getElementById('success-modal').style.display='none'" class="confirm-btn">Done</button>
+        </div>
+    </div>
+
+    <div id="menu-page" class="page active">
+        <div class="header">
+            <!-- <div class="header-title">Menu</div> -->
+        </div>
+
+        <div class="menu-grid">
+            <div class="menu-item" data-item="burger" data-price="150">
+                <div class="item-image">🍔</div>
+                <div class="item-name">Burger</div>
+                <div class="item-price">₹150</div>
+                <span class="quantity-badge" id="burger-badge" style="display:none;">0</span>
+                <button class="add-button" onclick="addItem('burger')">ADD</button>
+                <div class="quantity-controls">
+                    <button class="quantity-btn-minus" onclick="updateQuantity('burger', -1)">-</button>
+                    <button class="quantity-btn-plus" onclick="updateQuantity('burger', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-item="fries" data-price="100">
+                <div class="item-image">🍟</div>
+                <div class="item-name">Fries</div>
+                <div class="item-price">₹100</div>
+                <span class="quantity-badge" id="fries-badge" style="display:none;">0</span>
+                <button class="add-button" onclick="addItem('fries')">ADD</button>
+                <div class="quantity-controls">
+                    <button class="quantity-btn-minus" onclick="updateQuantity('fries', -1)">-</button>
+                    <button class="quantity-btn-plus" onclick="updateQuantity('fries', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-item="hotdog" data-price="200">
+                <div class="item-image">🌭</div>
+                <div class="item-name">Hotdog</div>
+                <div class="item-price">₹200</div>
+                <span class="quantity-badge" id="hotdog-badge" style="display:none;">0</span>
+                <button class="add-button" onclick="addItem('hotdog')">ADD</button>
+                <div class="quantity-controls">
+                    <button class="quantity-btn-minus" onclick="updateQuantity('hotdog', -1)">-</button>
+                    <button class="quantity-btn-plus" onclick="updateQuantity('hotdog', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-item="taco" data-price="150">
+                <div class="item-image">🌮</div>
+                <div class="item-name">Taco</div>
+                <div class="item-price">₹150</div>
+                <span class="quantity-badge" id="taco-badge" style="display:none;">0</span>
+                <button class="add-button" onclick="addItem('taco')">ADD</button>
+                <div class="quantity-controls">
+                    <button class="quantity-btn-minus" onclick="updateQuantity('taco', -1)">-</button>
+                    <button class="quantity-btn-plus" onclick="updateQuantity('taco', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-item="pizza" data-price="350">
+                <div class="item-image">🍕</div>
+                <div class="item-name">Pizza</div>
+                <div class="item-price">₹350</div>
+                <span class="quantity-badge" id="pizza-badge" style="display:none;">0</span>
+                <button class="add-button" onclick="addItem('pizza')">ADD</button>
+                <div class="quantity-controls">
+                    <button class="quantity-btn-minus" onclick="updateQuantity('pizza', -1)">-</button>
+                    <button class="quantity-btn-plus" onclick="updateQuantity('pizza', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="menu-item" data-item="donut" data-price="80">
+                <div class="item-image">🍩</div>
+                <div class="item-name">Donut</div>
+                <div class="item-price">₹80</div>
+                <span class="quantity-badge" id="donut-badge" style="display:none;">0</span>
+                <button class="add-button" onclick="addItem('donut')">ADD</button>
+                <div class="quantity-controls">
+                    <button class="quantity-btn-minus" onclick="updateQuantity('donut', -1)">-</button>
+                    <button class="quantity-btn-plus" onclick="updateQuantity('donut', 1)">+</button>
+                </div>
+            </div>
+
+
+        </div>
+
+        <button class="view-order-button" onclick="showOrderPage()">View Order</button>
+    </div>
+
+    <div id="order-page" class="page">
+        <div class="header">
+            <button class="back-button" onclick="showMenuPage()">←</button>
+            <div class="header-title">YOUR ORDER</div>
+            <button class="edit-button" onclick="showMenuPage()">Edit</button>
+        </div>
+
+        <div class="order-summary" id="order-items">
+            <!-- Order items will be populated here -->
+        </div>
+
+        <div class="comment-section">
+            <div class="comment-section-title">Add comment...</div>
+            <textarea class="comment-input" placeholder="Any special requests, details, final wishes etc."
+                id="order-comment"></textarea>
+        </div>
+
+        <button class="pay-button" onclick="showPaymentModal()">PAY ₹0.00</button>
+
+        <!-- Payment Modal -->
+        <div id="payment-modal" class="modal">
+            <div class="modal-content">
+                <h2>Select Payment Method</h2>
+                <div class="payment-options">
+                    <button onclick="processCashPayment()" class="payment-btn cash-btn">
+                        <span class="payment-icon">💵</span>
+                        Cash Payment
+                    </button>
+                    <button onclick="processOnlinePayment()" class="payment-btn online-btn">
+                        <span class="payment-icon">💳</span>
+                        Online Payment
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Online Payment Modal -->
+        <div id="online-payment-modal" class="modal">
+            <div class="modal-content">
+                <h2>Online Payment</h2>
+                <div class="qr-container">
+                    <div id="qr-code"></div>
+                    <p>UPI ID: merchant@upi</p>
+                </div>
+                <p>Scan QR code or use UPI ID to pay</p>
+                <button onclick="confirmOnlinePayment()" class="confirm-btn">Confirm Payment</button>
+            </div>
+        </div>
+
+        <!-- Order Success Modal -->
+        <div id="success-modal" class="modal">
+            <div class="modal-content">
+                <h2>Order Successful! 🎉</h2>
+                <div id="order-details"></div>
+                <button onclick="closeSuccessModal()" class="confirm-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add this before closing </head> tag -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 20% auto;
+            padding: 20px;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+        }
+
+        .payment-options {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .payment-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cash-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .online-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .payment-icon {
+            font-size: 24px;
+        }
+
+        .qr-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        #qr-code {
+            padding: 16px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .confirm-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .confirm-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        /* Base styles and resets */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            max-width: 100vw;
+            overflow-x: hidden;
+            /* min-height: 100vh; */
+        }
+
+        /* Container styles */
+        .page {
+            padding: 0;
+            display: none;
+            min-height: auto;
+            padding-bottom: env(safe-area-inset-bottom);
+
+        }
+
+        .page.active {
+            display: block;
+            overflow-y: scroll;
+        }
+
+        /* Header styles */
+        /* .header {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: white;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            gap: 12px;
+            justify-content: center;
+            max-width: 100vw;
+            border-radius: 0 0 12px 12px;
+            text-align: center;
+        } */
+
+        .back-button {
+            font-size: 24px;
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            color: #333;
+        }
+
+        /* .header-title {
+            flex: 1;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        } */
+
+        .edit-button {
+            font-size: 16px;
+            color: #4CAF50;
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        /* Order summary styles */
+        .order-summary {
+            background: white;
+            margin: 16px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .order-item-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .order-item-image {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .order-item-details {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .order-item-name {
+            font-size: 16px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .order-item-quantity {
+            color: #ff6b35;
+            font-weight: 600;
+        }
+
+        .order-item-variant {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .order-item-price {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        /* Comment section styles */
+        .comment-section {
+            margin: 16px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .comment-section-title {
+            color: #666;
+            font-size: 16px;
+            padding: 16px 16px 8px 16px;
+        }
+
+        .comment-input {
+            width: 100%;
+            min-height: 120px;
+            border: none;
+            padding: 16px;
+            font-size: 16px;
+            color: #333;
+            background: white;
+            resize: none;
+            box-sizing: border-box;
+        }
+
+        .comment-input::placeholder {
+            color: #999;
+        }
+
+        /* Pay button styles */
+        .pay-button {
+            position: fixed;
+            bottom: 16px;
+            left: 16px;
+            transform: translateX(-50%);
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: pulseButton 2s infinite;
+        }
+
+        .pay-button:hover {
+            transform: scale(1.02);
+            background: #45a049;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+        }
+
+        .pay-button:active {
+            transform: scale(0.98);
+        }
+
+        @keyframes pulseButton {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (min-width: 768px) {
+            .page {
+                max-width: 600px;
+                margin: 0 auto;
+                height: 100vh;
+            }
+
+            .header {
+                max-width: 600px;
+                margin: 0 auto;
+            }
+
+            .pay-button {
+                max-width: 600px;
+                transform: translateX(-50%);
+            }
+        }
+
+        @media (max-width: 380px) {
+            .order-item {
+                padding: 12px;
+            }
+
+            .order-item-image {
+                width: 40px;
+                height: 40px;
+                font-size: 28px;
+            }
+
+            .order-item-name {
+                font-size: 14px;
+            }
+
+            .order-item-price {
+                font-size: 14px;
+            }
+        }
+
+        /* Safe area adjustments for modern mobile devices */
+        @supports (padding: max(0px)) {
+            .pay-button {
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
+            }
+
+            .page {
+                padding-bottom: max(80px, calc(80px + env(safe-area-inset-bottom)));
+            }
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            margin: 0 auto;
+            max-width: 100%;
+            overflow-y: auto;
+        }
+
+        .menu-item {
+            padding: 16px;
+            text-align: center;
+            position: relative;
+        }
+
+        .item-image {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .item-name {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .item-price {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .quantity-controls {
+            display: flex;
+            flex-direction: row;
+            display: none;
+            /* Initially hidden */
+            justify-content: center;
+            gap: 8px;
+            align-items: center;
+            background: #f5f5f5;
+            border-radius: 8px;
+            /* padding: 4px 8px; */
+            /* margin-top: 8px; */
+        }
+
+        .add-button {
+            background: #ffa726;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 68px;
+            display: block;
+            /* Initially visible */
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .quantity-btn-minus {
+            background: linear-gradient(145deg, #ff4d4d, #ff0000);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 8px;
+            /* box-shadow: 0 2px 4px rgba(255, 0, 0, 0.2);
+            transition: all 0.3s ease; */
+            width: 2rem;
+        }
+
+        .quantity-btn-minus:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 0, 0, 0.3);
+        }
+
+        .quantity-btn-minus:active {
+            transform: scale(0.95);
+        }
+
+        .quantity-btn-plus {
+            background: #ffa726;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 8px;
+            /* box-shadow: 0 2px 4px rgba(255, 107, 53, 0.2);
+            transition: all 0.3s ease; */
+            width: 2rem;
+        }
+
+        .quantity-btn-plus:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+        }
+
+        .quantity-btn-plus:active {
+            transform: scale(0.95);
+        }
+
+        .quantity {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            min-width: 24px;
+            text-align: center;
+            background: none;
+            position: static;
+            border-radius: 0;
+            padding: 0;
+            height: auto;
+            display: inline;
+            box-shadow: none;
+        }
+
+        .quantity-controls.active {
+            display: flex;
+        }
+
+        .add-button.hidden {
+            display: none;
+        }
+
+        .view-order-button {
+            position: fixed;
+            bottom: 16px;
+            left: 0;
+            right: 0;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 16px;
+            font-size: 16px;
+            cursor: pointer;
+            display: none;
+            z-index: 100;
+            border-radius: 16px;
+            margin: 0 16px;
+            max-width: calc(100% - 32px);
+        }
+
+        .view-order-button.active {
+            display: block;
+            transform: translateY(0);
+            opacity: 1;
+            animation: slideUp 0.3s ease;
+        }
+
+        .view-order-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .view-order-button:active {
+            animation: scaleButton 0.2s ease;
+        }
+
+        .order-item {
+            animation: fadeIn 0.3s ease;
+            transition: all 0.2s ease;
+        }
+
+        .order-item:hover {
+            transform: translateX(4px);
+        }
+
+        .header {
+            animation: slideUp 0.3s ease;
+        }
+
+        /* Essential animations */
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Transitions */
+        .page,
+        .menu-item,
+        .item-image,
+        .quantity-btn,
+        .quantity,
+        .view-order-button,
+        .order-item,
+        .pay-button {
+            transition: all 0.3s ease;
+        }
+
+        /* Active states */
+        .page.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* .menu-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        } */
+
+        .quantity-btn:hover {
+            background: #d0d0d0;
+        }
+
+        .quantity-btn:active {
+            transform: scale(0.9);
+        }
+
+        .view-order-button.active {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .view-order-button:hover,
+        .pay-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .order-item:hover {
+            transform: translateX(4px);
+        }
+
+        .pay-button:active {
+            transform: scale(0.98);
+        }
+
+        /* Flip in from left */
+        .quantity-controls.flip-in {
+            animation: flipInLeft 0.6s forwards;
+        }
+
+        @keyframes flipInLeft {
+            from {
+                opacity: 0;
+                transform: rotateY(-90deg);
+            }
+
+            to {
+                opacity: 1;
+                transform: rotateY(0deg);
+            }
+        }
+
+        /* Flip out to right */
+        .quantity-controls.flip-out {
+            animation: flipOutRight 0.6s forwards;
+        }
+
+        @keyframes flipOutRight {
+            from {
+                opacity: 1;
+                transform: rotateY(0deg);
+            }
+
+            to {
+                opacity: 0;
+                transform: rotateY(90deg);
+            }
+        }
+
+        /* Flip in from right */
+        .add-button.flip-in {
+            animation: flipInRight 0.6s forwards;
+        }
+
+        @keyframes flipInRight {
+            from {
+                opacity: 0;
+                transform: rotateY(90deg);
+            }
+
+            to {
+                opacity: 1;
+                transform: rotateY(0deg);
+            }
+        }
+
+        /* Flip out to left */
+        .add-button.flip-out {
+            animation: flipOutLeft 0.6s forwards;
+        }
+
+        @keyframes flipOutLeft {
+            from {
+                opacity: 1;
+                transform: rotateY(0deg);
+            }
+
+            to {
+                opacity: 0;
+                transform: rotateY(-90deg);
+            }
+        }
+
+        .quantity-badge {
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            text-align: center;
+            position: absolute;
+            top: 5%;
+            right: 10%;
+            background: #ff6b35;
+            border-radius: 50%;
+            padding: 2px;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 2;
+        }
+
+        .quantity-badge.flip-in {
+            animation: flipInRight 0.6s forwards;
+        }
+
+        .quantity-badge.flip-out {
+            animation: flipOutLeft 0.6s forwards;
+        }
+    </style>
+
+    <!-- Modify the existing script section -->
+    <script>
+        let cart = {};
+
+        function addItem(item) {
+            const addButton = document.querySelector(`[data-item="${item}"] .add-button`);
+            const quantityControls = document.querySelector(`[data-item="${item}"] .quantity-controls`);
+
+            cart[item] = (cart[item] || 0) + 1;
+
+            // Show badge with animation
+            const badge = document.getElementById(`${item}-badge`);
+            badge.textContent = cart[item];
+            badge.classList.remove('flip-out');
+            badge.style.display = 'flex';
+            badge.classList.add('flip-in');
+            badge.addEventListener('animationend', function handler() {
+                badge.classList.remove('flip-in');
+                badge.removeEventListener('animationend', handler);
+            });
+
+            // Animate add button out with flip, then show quantity controls with flip-in
+            addButton.classList.add('flip-out');
+            addButton.addEventListener('animationend', function handler() {
+                addButton.classList.remove('flip-out');
+                addButton.classList.add('hidden');
+                quantityControls.classList.add('active', 'flip-in');
+                quantityControls.addEventListener('animationend', function handler2() {
+                    quantityControls.classList.remove('flip-in');
+                    quantityControls.removeEventListener('animationend', handler2);
+                });
+                addButton.removeEventListener('animationend', handler);
+            });
+            updateViewOrderButton();
+        }
+
+        function updateQuantity(item, delta) {
+            const addButton = document.querySelector(`[data-item="${item}"] .add-button`);
+            const quantityControls = document.querySelector(`[data-item="${item}"] .quantity-controls`);
+
+            cart[item] = (cart[item] || 0) + delta;
+
+            // Update badge with animation
+            const badge = document.getElementById(`${item}-badge`);
+            if (cart[item] > 0) {
+                badge.textContent = cart[item];
+                badge.classList.remove('flip-out');
+                badge.style.display = 'flex';
+                badge.classList.add('flip-in');
+                badge.addEventListener('animationend', function handler() {
+                    badge.classList.remove('flip-in');
+                    badge.removeEventListener('animationend', handler);
+                });
+            } else {
+                badge.classList.remove('flip-in');
+                badge.classList.add('flip-out');
+                badge.addEventListener('animationend', function handler() {
+                    badge.style.display = 'none';
+                    badge.classList.remove('flip-out');
+                    badge.removeEventListener('animationend', handler);
+                });
+            }
+
+            if (cart[item] <= 0) {
+                delete cart[item];
+                // Animate quantity controls out with flip, then show add button with flip-in
+                quantityControls.classList.add('flip-out');
+                quantityControls.addEventListener('animationend', function handler() {
+                    quantityControls.classList.remove('active', 'flip-out');
+                    addButton.classList.remove('hidden');
+                    addButton.classList.add('flip-in');
+                    addButton.addEventListener('animationend', function handler2() {
+                        addButton.classList.remove('flip-in');
+                        addButton.removeEventListener('animationend', handler2);
+                    });
+                    quantityControls.removeEventListener('animationend', handler);
+                });
+            }
+
+            updateViewOrderButton();
+        }
+
+        function updateViewOrderButton() {
+            const viewOrderButton = document.querySelector('.view-order-button');
+            const totalItems = Object.values(cart).reduce((sum, quantity) => sum + quantity, 0);
+
+            if (totalItems > 0) {
+                let total = 0;
+                for (const [item, quantity] of Object.entries(cart)) {
+                    const price = parseFloat(document.querySelector(`[data-item="${item}"]`).dataset.price);
+                    total += price * quantity;
+                }
+                viewOrderButton.textContent = `View Order (${totalItems} items - ₹${total.toFixed(2)})`;
+                viewOrderButton.classList.add('active');
+            } else {
+                viewOrderButton.classList.remove('active');
+            }
+        }
+
+        function showOrderPage() {
+            document.getElementById('menu-page').classList.remove('active');
+            document.getElementById('order-page').classList.add('active');
+            updateOrderSummary();
+        }
+
+        function showMenuPage() {
+            document.getElementById('order-page').classList.remove('active');
+            document.getElementById('menu-page').classList.add('active');
+        }
+
+        function updateOrderSummary() {
+            const orderItems = document.getElementById('order-items');
+            const payButton = document.querySelector('.pay-button');
+            let total = 0;
+
+            orderItems.innerHTML = '';
+
+            for (const [item, quantity] of Object.entries(cart)) {
+                const menuItem = document.querySelector(`[data-item="${item}"]`);
+                const price = parseFloat(menuItem.dataset.price);
+                const itemTotal = price * quantity;
+                total += itemTotal;
+
+                const itemElement = document.createElement('div');
+                itemElement.className = 'order-item';
+                itemElement.innerHTML = `
+                    <div class="order-item-left">
+                        <div class="order-item-image">${menuItem.querySelector('.item-image').textContent}</div>
+                        <div class="order-item-details">
+                            <div class="order-item-name">
+                                <span class="order-item-quantity">${quantity}×</span>
+                                ${menuItem.querySelector('.item-name').textContent}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="order-item-price">₹${itemTotal.toFixed(2)}</div>
+                `;
+
+                orderItems.appendChild(itemElement);
+            }
+
+            payButton.textContent = `PAY ₹${total.toFixed(2)}`;
+        }
+
+        function showPaymentModal() {
+            document.getElementById('payment-modal').style.display = 'block';
+        }
+
+        function generateToken() {
+            return Math.random().toString(36).substr(2, 8).toUpperCase();
+        }
+
+        function generateCounterNumber() {
+            return Math.floor(Math.random() * 100) + 1;
+        }
+
+        function resetOrder() {
+            // Reset cart object
+            cart = {};
+
+            // Reset all quantity displays
+            document.querySelectorAll('.quantity').forEach(qty => {
+                qty.textContent = '0';
+            });
+
+            // Reset all quantity badge displays
+            document.querySelectorAll('.quantity-badge').forEach(badge => {
+                badge.style.display = 'none';
+            });
+
+            // Hide all quantity controls and show ADD buttons
+            document.querySelectorAll('.quantity-controls').forEach(control => {
+                control.classList.remove('active');
+            });
+            document.querySelectorAll('.add-button').forEach(btn => {
+                btn.classList.remove('hidden');
+            });
+
+            // Reset view order button
+            const viewOrderBtn = document.querySelector('.view-order-button');
+            viewOrderBtn.classList.remove('active');
+        }
+
+        function processCashPayment() {
+            const counterNumber = generateCounterNumber();
+            const orderDetails = {
+                counter: counterNumber,
+                items: Object.entries(cart).map(([item, quantity]) => {
+                    const menuItem = document.querySelector(`[data-item="${item}"]`);
+                    return {
+                        name: menuItem.querySelector('.item-name').textContent.trim(),
+                        price: menuItem.dataset.price,
+                        quantity: quantity
+                    };
+                }),
+                comment: document.getElementById('order-comment').value,
+                paymentMethod: 'cash'
+            };
+
+            console.log("Sending order details to bot:", JSON.stringify(orderDetails)); // Log before sending
+
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
+                console.log("Order details sent to bot."); // Log after sending
+            } else {
+                console.log("Telegram WebApp not available");
+                // Fallback handling when not in Telegram
+                alert("Order placed successfully!");
+            }
+
+            resetOrder();
+
+            document.getElementById('payment-modal').style.display = 'none';
+            document.getElementById('order-details').innerHTML = `
+        <p>Counter Number: <strong>${counterNumber}</strong></p>
+        <p>Please collect your order from counter ${counterNumber}.</p>
+        `;
+            document.getElementById('success-modal').style.display = 'block';
+        }
+
+        function processOnlinePayment() {
+            document.getElementById('payment-modal').style.display = 'none';
+            document.getElementById('online-payment-modal').style.display = 'block';
+
+            // Generate QR code
+            const qrContainer = document.getElementById('qr-code');
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: 'upi://pay?pa=merchant@upi&pn=Restaurant&am=' + calculateTotal(),
+                width: 200,
+                height: 200
+            });
+        }
+
+        function calculateTotal() {
+            let total = 0;
+            for (const [item, quantity] of Object.entries(cart)) {
+                const price = parseFloat(document.querySelector(`[data-item="${item}"]`).dataset.price);
+                total += price * quantity;
+            }
+            return total.toFixed(2);
+        }
+
+        // Initialize Telegram WebApp
+        let tg = window.Telegram.WebApp;
+
+        // Ensure WebApp is ready
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            // Enable closing confirmation dialog
+            window.Telegram.WebApp.enableClosingConfirmation();
+        }
+
+        function confirmOnlinePayment() {
+            try {
+                const counterNumber = generateCounterNumber();
+
+                // Reset the order after successful payment
+                resetOrder();
+
+                // Hide payment modal
+                document.getElementById('online-payment-modal').style.display = 'none';
+                const orderDetails = {
+                    counter: counterNumber,
+                    items: Object.entries(cart).map(([item, quantity]) => {
+                        const menuItem = document.querySelector(`[data-item="${item}"]`);
+                        return {
+                            name: menuItem.querySelector('.item-name').textContent.trim(),
+                            price: menuItem.dataset.price,
+                            quantity: quantity
+                        };
+                    }),
+                    comment: document.getElementById('order-comment').value,
+                    paymentMethod: 'online',
+                    timestamp: new Date().toISOString()
+                };
+
+                // Prepare order items details
+                const orderItemsHtml = orderDetails.items.map(item => `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span>${item.name} × ${item.quantity}</span>
+                        <span>₹${(item.price * item.quantity).toFixed(2)}</span>
+                    </div>
+                `).join('');
+
+                document.getElementById('order-details').innerHTML = `
+                    <div class="order-summary" style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <h3 style="color: #333; margin-bottom: 10px;">Order Summary</h3>
+                        <div id="order-items">${orderItemsHtml}</div>
+                        <div style="border-top: 2px dashed #ddd; padding-top: 10px;">
+                            <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                                <span>Total Amount:</span>
+                                <span>₹${calculateTotal()}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background: #e8f5e9; padding: 15px; border-radius: 8px;">
+                        <div style="color: #2e7d32; font-weight: bold;">
+                            <span>✅ Payment Status:</span>
+                            <span>Successful</span>
+                        </div>
+                        <div style="color: #666; font-size: 0.9em; margin-top: 5px;">
+                            <span>Counter Number:</span>
+                            <span><strong>${counterNumber}</strong></span>
+                        </div>
+                        <div style="color: #666; font-size: 0.9em; margin-top: 5px;">
+                            <span>Order ID:</span>
+                            <span>#${Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
+                        </div>
+                    </div>
+                    <p style="margin-top: 15px; color: #4CAF50;">Please collect your order from counter ${counterNumber}</p>
+                `;
+                document.getElementById('success-modal').style.display = 'block';
+
+                // Send to Telegram bot with proper error handling
+                if (window.Telegram && window.Telegram.WebApp) {
+                    try {
+                        window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
+                        console.log("Order details sent to bot successfully.");
+                    } catch (error) {
+                        console.error("Error sending data to Telegram bot:", error);
+                        alert("There was an error processing your order. Please try again.");
+                    }
+                } else {
+                    console.warn("Telegram WebApp not available - running in standalone mode");
+                    alert("Order placed successfully! (Standalone Mode)");
+                }
+            } catch (error) {
+                console.error("Error in confirmOnlinePayment:", error);
+                alert("There was an error processing your order. Please try again.");
+            }
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('success-modal').style.display = 'none';
+            cart = {};
+            showMenuPage();
+            updateViewOrderButton();
+        }
+    </script>
 </body>
+
 </html>
