@@ -723,7 +723,6 @@
 </head> 
 
 <body>
-    <div id="debug-overlay" style="display:none;position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);color:#fff;font-size:14px;overflow:auto;padding:20px;"></div>
     <div id="success-modal" class="modal">
         <div class="modal-content">
             <h2 style="color: #4CAF50; margin-bottom: 20px;">Order Confirmed! 🎉</h2>
@@ -1593,59 +1592,6 @@
     <!-- Modify the existing script section -->
     <script>
         let cart = {};
-        let tg = null;
-        let webAppDataSent = false;
-        let debugOverlay = null;
-        let debugLogs = [];
-        let closeTimeout = null;
-
-        function showDebug(msg) {
-            debugLogs.push(msg);
-            if (!debugOverlay) debugOverlay = document.getElementById('debug-overlay');
-            if (debugOverlay) {
-                debugOverlay.innerHTML = '<b>Debug Log:</b><br>' + debugLogs.map(l => `<div>${l}</div>`).join('') + '<br><button onclick="document.getElementById(\'debug-overlay\').style.display=\'none\'">Hide</button>';
-                debugOverlay.style.display = 'block';
-            }
-        }
-        function hideDebug() {
-            if (debugOverlay) debugOverlay.style.display = 'none';
-        }
-        function logDebug(msg) {
-            debugLogs.push(msg);
-            if (debugOverlay && debugOverlay.style.display === 'block') {
-                debugOverlay.innerHTML = '<b>Debug Log:</b><br>' + debugLogs.map(l => `<div>${l}</div>`).join('') + '<br><button onclick="document.getElementById(\'debug-overlay\').style.display=\'none\'">Hide</button>';
-            }
-        }
-        window.onerror = function(msg, url, line, col, error) {
-            showDebug('JS Error: ' + msg + ' at ' + url + ':' + line + ':' + col);
-        };
-
-        // Enhanced Telegram WebApp initialization
-        function initTelegram() {
-            try {
-                if (window.Telegram && window.Telegram.WebApp) {
-                    tg = window.Telegram.WebApp;
-                    tg.ready();
-                    tg.enableClosingConfirmation();
-                    logDebug('Telegram WebApp initialized. Platform: ' + tg.platform);
-                    if (tg.onEvent) {
-                        tg.onEvent('webAppDataSent', function() {
-                            logDebug('webAppDataSent event received. Closing mini app.');
-                            webAppDataSent = true;
-                            if (closeTimeout) clearTimeout(closeTimeout);
-                            if (tg.close) tg.close();
-                        });
-                    } else {
-                        logDebug('tg.onEvent not available');
-                    }
-                } else {
-                    showDebug('Telegram WebApp not found.');
-                }
-            } catch (e) {
-                showDebug('Telegram init error: ' + e);
-            }
-        }
-        initTelegram();
 
         function addItem(item) {
             const addButton = document.querySelector(`[data-item="${item}"] .add-button`);
@@ -1841,16 +1787,13 @@
                 paymentMethod: paymentMethod,
                 timestamp: new Date().toISOString()
             };
-            logDebug('Sending order to bot: ' + JSON.stringify(orderDetails));
-            if (tg) {
+
+            if (window.Telegram && window.Telegram.WebApp) {
                 try {
-                    tg.sendData(JSON.stringify(orderDetails));
-                    logDebug('tg.sendData called.');
+                    window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
                 } catch (error) {
-                    showDebug('Error sending data to Telegram bot: ' + error);
+                    console.error("Error sending data to Telegram bot:", error);
                 }
-            } else {
-                showDebug('tg not initialized');
             }
         }
 
@@ -1898,6 +1841,16 @@
                 total += price * quantity;
             }
             return total.toFixed(2);
+        }
+
+        // Initialize Telegram WebApp
+        let tg = window.Telegram.WebApp;
+
+        // Ensure WebApp is ready
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            // Enable closing confirmation dialog
+            window.Telegram.WebApp.enableClosingConfirmation();
         }
 
         function confirmOnlinePayment() {
@@ -1956,28 +1909,15 @@
         }
 
         function closeSuccessModal() {
-            // Only close after webAppDataSent or after fallback delay
-            logDebug('closeSuccessModal called. Waiting for webAppDataSent.');
+            if (window.Telegram && window.Telegram.WebApp) {
+                setTimeout(() => {
+                    window.Telegram.WebApp.close();
+                }, 100);
+            }
             document.getElementById('success-modal').style.display = 'none';
             cart = {};
             showMenuPage();
             updateViewOrderButton();
-            if (tg && tg.close) {
-                if (!webAppDataSent) {
-                    logDebug('Setting fallback close timeout (2s)');
-                    closeTimeout = setTimeout(function() {
-                        if (!webAppDataSent) {
-                            logDebug('Fallback close triggered.');
-                            tg.close();
-                        }
-                    }, 2000);
-                } else {
-                    logDebug('Already received webAppDataSent, closing.');
-                    tg.close();
-                }
-            } else {
-                logDebug('tg.close not available');
-            }
         }
     </script>
 </body>
