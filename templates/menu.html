@@ -1821,9 +1821,9 @@
 
             // ✅ VERY IMPORTANT: Close the WebApp to trigger web_app_data on mobile
             setTimeout(() => {
-                if (window.Telegram && window.Telegram.WebApp) {
+                //if (window.Telegram && window.Telegram.WebApp) {
                     window.Telegram.WebApp.close();
-                }
+                // }
             }, 500);
         }
 
