@@ -850,8 +850,7 @@
 
         <div class="comment-section">
             <div class="comment-section-title">Add comment...</div>
-            <textarea class="comment-input" placeholder="Any special requests, details, final wishes etc."
-                id="order-comment"></textarea>
+            <textarea class="comment-input" placeholder="Any special requests, details, final wishes etc." id="order-comment"></textarea>
         </div>
 
         <button class="pay-button" onclick="showPaymentModal()">PAY ₹0.00</button>
@@ -1820,11 +1819,20 @@
             document.getElementById('success-modal').style.display = 'block';
 
             // ✅ VERY IMPORTANT: Close the WebApp to trigger web_app_data on mobile
+
             setTimeout(() => {
-                //if (window.Telegram && window.Telegram.WebApp) {
-                    window.Telegram.WebApp.close();
-                // }
-            }, 500);
+
+                try {
+                    if (window.Telegram && window.Telegram.WebApp) {
+                        window.Telegram.WebApp.close();
+                    }
+
+                } catch (error) {
+                    alert("Error closing WebApp: " + error);
+                }
+
+            }, 100);
+
         }
 
 
@@ -1876,11 +1884,11 @@
                     const menuItem = document.querySelector(`[data-item="${item}"]`);
                     const price = menuItem.dataset.price;
                     return `
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                            <span>${menuItem.querySelector('.item-name').textContent.trim()} × ${quantity}</span>
-                            <span>₹${(price * quantity).toFixed(2)}</span>
-                        </div>
-                    `;
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span>${menuItem.querySelector('.item-name').textContent.trim()} × ${quantity}</span>
+                                <span>₹${(price * quantity).toFixed(2)}</span>
+                            </div>
+                        `;
                 }).join('')}</div>
                 <div style="border-top: 2px dashed #ddd; padding-top: 10px;">
                     <div style="display: flex; justify-content: space-between; font-weight: bold;">
