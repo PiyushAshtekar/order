@@ -748,7 +748,7 @@
                     </div>
                 </div>
             </div>
-            <button onclick="document.getElementById('success-modal').style.display='none'" class="confirm-btn">Done</button>
+            <!-- <button onclick="document.getElementById('success-modal').style.display='none'" class="confirm-btn">Done</button> -->
         </div>
     </div>
 
@@ -1897,11 +1897,12 @@
                 timestamp: new Date().toISOString()
             };
 
-            // Send data to bot and close mini app
             if (window.Telegram && window.Telegram.WebApp) {
                 try {
                     window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
-                    window.Telegram.WebApp.close();
+                    setTimeout(() => {
+                        window.Telegram.WebApp.close();
+                    }, 500);
                 } catch (error) {
                     console.error("Error sending data to Telegram bot:", error);
                     alert("There was an error processing your order. Please try again.");
