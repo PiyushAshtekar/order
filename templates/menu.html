@@ -1819,21 +1819,26 @@
     `;
             document.getElementById('success-modal').style.display = 'block';
 
-            // ✅ VERY IMPORTANT: Close the WebApp to trigger web_app_data on mobile
+            // Initialize Telegram WebApp and prepare data
+            const tg = window.Telegram.WebApp;
+            const orderData = {
+                payment_type: 'cash',
+                counter_number: counterNumber,
+                items: orderItems,
+                total: calculateTotal()
+            };
 
+            // Send data back to Telegram
+            tg.sendData(JSON.stringify(orderData));
+
+            // Close the WebApp after a short delay
             setTimeout(() => {
-
                 try {
-                    // if (window.Telegram && window.Telegram.WebApp) {
-                        window.Telegram.WebApp.close();
-                    // }
-
+                    tg.close();
                 } catch (error) {
-                    document.getElementById('error-info').innerHTML = error;
-                    // alert("Error closing WebApp: " + error);
+                    document.getElementById('error-info').innerHTML = 'Error closing WebApp: ' + error.message;
                 }
-
-            }, 10000);
+            }, 2000);
 
         }
 
