@@ -1900,18 +1900,22 @@
             // Send data to bot and close mini app
             if (window.Telegram && window.Telegram.WebApp) {
                 try {
+                    // Send data first
                     window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
-                    window.Telegram.WebApp.close();
+                    
+                    // Add a small delay before closing to ensure data is sent
+                    setTimeout(() => {
+                        document.getElementById('success-modal').style.display = 'none';
+                        cart = {};
+                        showMenuPage();
+                        updateViewOrderButton();
+                        window.Telegram.WebApp.close();
+                    }, 500); // 500ms delay
                 } catch (error) {
                     console.error("Error sending data to Telegram bot:", error);
                     alert("There was an error processing your order. Please try again.");
                 }
             }
-
-            document.getElementById('success-modal').style.display = 'none';
-            cart = {};
-            showMenuPage();
-            updateViewOrderButton();
         }
     </script>
 </body>
