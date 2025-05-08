@@ -1813,10 +1813,9 @@
                     </div>
                     <p style="margin-top: 15px; color: #4CAF50;">Please collect your order from counter ${counterNumber}</p>
                 </div>
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button onclick="closeSuccessModal()" class="confirm-btn" style="flex:1;">OK, Close Mini App</button>
-                    <button onclick="newOrder()" class="confirm-btn" style="flex:1; background-color: #2196F3;">New Order</button>
-                </div>
+                <button onclick="closeSuccessModal()" class="confirm-btn" style="width: 100%; margin-top: 20px;">
+                    OK, Close Mini App
+                </button>
             `;
             document.getElementById('success-modal').style.display = 'block';
         }
@@ -1897,10 +1896,9 @@
                             <span>#${Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
                         </div>
                     </div>
-                    <div style="display: flex; gap: 10px; margin-top: 20px;">
-                        <button onclick="closeSuccessModal()" class="confirm-btn" style="flex:1;">OK, Close Mini App</button>
-                        <button onclick="newOrder()" class="confirm-btn" style="flex:1; background-color: #2196F3;">New Order</button>
-                    </div>
+                    <button onclick="closeSuccessModal()" class="confirm-btn" style="width: 100%; margin-top: 20px;">
+                        OK, Close Mini App
+                    </button>
                 `;
                 document.getElementById('success-modal').style.display = 'block';
                 resetOrder();
@@ -1916,13 +1914,6 @@
                     window.Telegram.WebApp.close();
                 }, 100);
             }
-            document.getElementById('success-modal').style.display = 'none';
-            cart = {};
-            showMenuPage();
-            updateViewOrderButton();
-        }
-
-        function newOrder() {
             document.getElementById('success-modal').style.display = 'none';
             cart = {};
             showMenuPage();
