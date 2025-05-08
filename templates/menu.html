@@ -726,6 +726,7 @@
     <div id="success-modal" class="modal">
         <div class="modal-content">
             <h2 style="color: #4CAF50; margin-bottom: 20px;">Order Confirmed! 🎉</h2>
+            <div id="error-info"></div>
             <div id="order-details" style="text-align: left; margin-bottom: 20px;">
                 <div class="order-summary"
                     style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
@@ -1823,15 +1824,16 @@
             setTimeout(() => {
 
                 try {
-                    if (window.Telegram && window.Telegram.WebApp) {
+                    // if (window.Telegram && window.Telegram.WebApp) {
                         window.Telegram.WebApp.close();
-                    }
+                    // }
 
                 } catch (error) {
-                    alert("Error closing WebApp: " + error);
+                    document.getElementById('error-info').innerHTML = error;
+                    // alert("Error closing WebApp: " + error);
                 }
 
-            }, 100);
+            }, 10000);
 
         }
 
