@@ -95,7 +95,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def telegram_webhook():
     try:
         data = await request.get_data()
-        logger.info(f"Received webhook data length: {len(data)} bytes")
+        logger.info(f"Received webhook request with data: {data.decode('utf-8')}")
         
         if not data:
             logger.error("Empty webhook data received")
@@ -104,7 +104,7 @@ async def telegram_webhook():
         # Convert the string data to JSON first
         import json
         json_data = json.loads(data.decode("utf-8"))
-        logger.info(f"Webhook data: {json_data}")
+        logger.info(f"Parsed webhook JSON: {json_data}")
         
         update = Update.de_json(json_data, bot)
         logger.info(f"Processing update ID: {update.update_id if update else 'None'}")
@@ -173,11 +173,11 @@ async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # Handle web app data
 async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.message and update.message.web_app_data:
+    if update.message and update.message.web_app_data.data:
         logger.info("handle_webapp_data called")  # Log function entry
         try:
             # Verify we have web_app_data
-            if not update.message or not update.message.web_app_data:
+            if not update.message or not update.message.web_app_data.data:
                 logger.error("No web_app_data received")
                 await context.bot.send_message(
                     chat_id=update.effective_chat.id,
@@ -301,11 +301,11 @@ if __name__ == "__main__":
             await post_init(application)
         except Exception as e:
             logger.error(f"Failed to initialize webhook: {e}", exc_info=True)
-            sys.exit(1)
+            return
         
         # Start the application
-        logger.info("Starting application...")
-        await application.start()
+        # logger.info("Starting application...")
+        # await application.start()
         
         # Start Quart server
         logger.info("Starting Quart server")

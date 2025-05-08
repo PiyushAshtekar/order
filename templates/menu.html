@@ -1774,38 +1774,23 @@
 
         function processCashPayment() {
             const counterNumber = generateCounterNumber();
-            const orderDetails = {
-                counter: counterNumber,
-                items: Object.entries(cart).map(([item, quantity]) => {
-                    const menuItem = document.querySelector(`[data-item="${item}"]`);
-                    return {
-                        name: menuItem.querySelector('.item-name').textContent.trim(),
-                        price: menuItem.dataset.price,
-                        quantity: quantity
-                    };
-                }),
-                comment: document.getElementById('order-comment').value,
-                paymentMethod: 'cash'
-            };
-
-            console.log("Sending order details to bot:", JSON.stringify(orderDetails)); // Log before sending
-
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
-                console.log("Order details sent to bot."); // Log after sending
-            } else {
-                console.log("Telegram WebApp not available");
-                // Fallback handling when not in Telegram
-                alert("Order placed successfully!");
-            }
-
             resetOrder();
-
             document.getElementById('payment-modal').style.display = 'none';
             document.getElementById('order-details').innerHTML = `
-        <p>Counter Number: <strong>${counterNumber}</strong></p>
-        <p>Please collect your order from counter ${counterNumber}.</p>
-        `;
+                <div class="order-summary" style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <h3 style="color: #333; margin-bottom: 10px;">Payment Successful!</h3>
+                    <div style="background: #e8f5e9; padding: 15px; border-radius: 8px;">
+                        <div style="color: #2e7d32; font-weight: bold;">
+                            <span>✅ Counter Number: </span>
+                            <span><strong>${counterNumber}</strong></span>
+                        </div>
+                    </div>
+                    <p style="margin-top: 15px; color: #4CAF50;">Please collect your order from counter ${counterNumber}</p>
+                </div>
+                <button onclick="closeSuccessModal()" class="confirm-btn" style="width: 100%; margin-top: 20px;">
+                    OK, Close Mini App
+                </button>
+            `;
             document.getElementById('success-modal').style.display = 'block';
         }
 
@@ -1845,31 +1830,19 @@
         function confirmOnlinePayment() {
             try {
                 const counterNumber = generateCounterNumber();
-
-                // Hide payment modal
                 document.getElementById('online-payment-modal').style.display = 'none';
-                const orderDetails = {
-                    counter: counterNumber,
-                    items: Object.entries(cart).map(([item, quantity]) => {
-                        const menuItem = document.querySelector(`[data-item="${item}"]`);
-                        return {
-                            name: menuItem.querySelector('.item-name').textContent.trim(),
-                            price: menuItem.dataset.price,
-                            quantity: quantity
-                        };
-                    }),
-                    comment: document.getElementById('order-comment').value,
-                    paymentMethod: 'online',
-                    timestamp: new Date().toISOString()
-                };
-
+                
                 // Prepare order items details
-                const orderItemsHtml = orderDetails.items.map(item => `
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                        <span>${item.name} × ${item.quantity}</span>
-                        <span>₹${(item.price * item.quantity).toFixed(2)}</span>
-                    </div>
-                `).join('');
+                const orderItemsHtml = Object.entries(cart).map(([item, quantity]) => {
+                    const menuItem = document.querySelector(`[data-item="${item}"]`);
+                    const price = menuItem.dataset.price;
+                    return `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>${menuItem.querySelector('.item-name').textContent.trim()} × ${quantity}</span>
+                            <span>₹${(price * quantity).toFixed(2)}</span>
+                        </div>
+                    `;
+                }).join('');
 
                 document.getElementById('order-details').innerHTML = `
                     <div class="order-summary" style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
@@ -1896,24 +1869,11 @@
                             <span>#${Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
                         </div>
                     </div>
-                    <p style="margin-top: 15px; color: #4CAF50;">Please collect your order from counter ${counterNumber}</p>
+                    <button onclick="closeSuccessModal()" class="confirm-btn" style="width: 100%; margin-top: 20px;">
+                        OK, Close Mini App
+                    </button>
                 `;
                 document.getElementById('success-modal').style.display = 'block';
-
-                // Send to Telegram bot with proper error handling
-                if (window.Telegram && window.Telegram.WebApp) {
-                    try {
-                        window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
-                        console.log("Order details sent to bot successfully.");
-                    } catch (error) {
-                        console.error("Error sending data to Telegram bot:", error);
-                        alert("There was an error processing your order. Please try again.");
-                    }
-                } else {
-                    console.warn("Telegram WebApp not available - running in standalone mode");
-                    alert("Order placed successfully! (Standalone Mode)");
-                }
-                // Now reset the order after sending
                 resetOrder();
             } catch (error) {
                 console.error("Error in confirmOnlinePayment:", error);
@@ -1922,6 +1882,32 @@
         }
 
         function closeSuccessModal() {
+            const orderDetails = {
+                counter: document.querySelector('#order-details strong').textContent,
+                items: Object.entries(cart).map(([item, quantity]) => {
+                    const menuItem = document.querySelector(`[data-item="${item}"]`);
+                    return {
+                        name: menuItem.querySelector('.item-name').textContent.trim(),
+                        price: menuItem.dataset.price,
+                        quantity: quantity
+                    };
+                }),
+                comment: document.getElementById('order-comment').value,
+                paymentMethod: document.querySelector('#order-details').textContent.includes('online') ? 'online' : 'cash',
+                timestamp: new Date().toISOString()
+            };
+
+            // Send data to bot and close mini app
+            if (window.Telegram && window.Telegram.WebApp) {
+                try {
+                    window.Telegram.WebApp.sendData(JSON.stringify(orderDetails));
+                    window.Telegram.WebApp.close();
+                } catch (error) {
+                    console.error("Error sending data to Telegram bot:", error);
+                    alert("There was an error processing your order. Please try again.");
+                }
+            }
+
             document.getElementById('success-modal').style.display = 'none';
             cart = {};
             showMenuPage();
